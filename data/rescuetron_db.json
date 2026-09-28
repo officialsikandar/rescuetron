@@ -2,9 +2,9 @@
   "settings": {
     "autoCallingEnabled": true,
     "gForceSensitivity": 4.5,
-    "lastUpdated": "2026-09-28T06:22:06.610Z",
+    "lastUpdated": "2026-09-28T14:31:10.666Z",
     "soundAlertsEnabled": true,
-    "trackerWaitSeconds": 60
+    "trackerWaitSeconds": 30
   },
   "users": {
     "user_1790525210329": {

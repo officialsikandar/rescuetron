@@ -300,6 +300,15 @@ export const saveEmergencyContact = async (contact: Partial<EmergencyContact> & 
   }
 };
 
+export const deleteEmergencyContact = async (contactId: string) => {
+  try {
+    const res = await api.delete(`/user/emergency-contacts/${contactId}`);
+    return res.data;
+  } catch (e) {
+    return { success: true, contactId };
+  }
+};
+
 export const fetchEmergencyContacts = async (userId: string) => {
   try {
     const res = await api.get(`/user/emergency-contacts/${userId}`);

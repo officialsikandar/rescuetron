@@ -374,6 +374,7 @@ export interface StoredContact {
   email: string;
   isPrimary: boolean;
   createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface StoredAlert {
@@ -713,18 +714,22 @@ app.post("/api/auth/login", async (req, res) => {
 
 // 4. Profile: Create or Update User Profile in Firebase
 app.post("/api/user/profile", async (req, res) => {
-  const { email, fullName, age, phone, bloodGroup, allergies, medicalConditions, medications, organDonor } = req.body;
+  const { email, fullName, age, phone, bloodGroup, allergies, medicalConditions, medications, organDonor, isOrganDonor, isBloodDonor, bloodDonor, isDonor } = req.body;
   const cleanEmail = email?.trim().toLowerCase();
 
   if (!cleanEmail) {
     return res.status(400).json({ success: false, message: "Email is required to save profile." });
   }
 
+  // Extract donor boolean from any supported alias
+  const rawDonorVal = organDonor !== undefined ? organDonor : (isOrganDonor !== undefined ? isOrganDonor : (isBloodDonor !== undefined ? isBloodDonor : (bloodDonor !== undefined ? bloodDonor : isDonor)));
+  const donorBool = rawDonorVal !== undefined ? Boolean(rawDonorVal) : true;
+
   let userId = await dbGet<string>(`usersByEmail/${sanitizeEmailKey(cleanEmail)}`);
-  let user: StoredUser | null = null;
+  let user: any = null;
 
   if (userId) {
-    user = await dbGet<StoredUser>(`users/${userId}`);
+    user = await dbGet<any>(`users/${userId}`);
   }
 
   if (!user) {
@@ -739,7 +744,11 @@ app.post("/api/user/profile", async (req, res) => {
       allergies: allergies || "None",
       medicalConditions: medicalConditions || "None",
       medications: medications || "None",
-      organDonor: organDonor !== undefined ? Boolean(organDonor) : true,
+      organDonor: donorBool,
+      isOrganDonor: donorBool,
+      isBloodDonor: donorBool,
+      bloodDonor: donorBool,
+      isDonor: donorBool,
       createdAt: new Date().toISOString(),
     };
   } else {
@@ -750,16 +759,22 @@ app.post("/api/user/profile", async (req, res) => {
     if (allergies !== undefined) user.allergies = allergies;
     if (medicalConditions !== undefined) user.medicalConditions = medicalConditions;
     if (medications !== undefined) user.medications = medications;
-    if (organDonor !== undefined) user.organDonor = Boolean(organDonor);
+    if (rawDonorVal !== undefined) {
+      user.organDonor = donorBool;
+      user.isOrganDonor = donorBool;
+      user.isBloodDonor = donorBool;
+      user.bloodDonor = donorBool;
+      user.isDonor = donorBool;
+    }
     user.updatedAt = new Date().toISOString();
   }
 
-  // Persist directly to Firebase Realtime Database
+  // Persist directly to Firebase Realtime Database & MongoDB file
   await dbSet(`users/${user.id}`, user);
   await dbSet(`usersByEmail/${sanitizeEmailKey(cleanEmail)}`, user.id);
 
   broadcastWs({ type: "PROFILE_UPDATED", user });
-  console.log(`👤 [Firebase RTDB] Saved user profile: /users/${user.id} (${user.email})`);
+  console.log(`👤 [Firebase RTDB] Saved user profile & donor status: /users/${user.id} (${user.email}) -> Donor: ${donorBool}`);
 
   return res.json({
     success: true,
@@ -907,9 +922,10 @@ app.post("/api/firebase/sync-all", async (req, res) => {
   });
 });
 
-// 6. Emergency Contacts: Add Contact to Firebase
+// 6. Emergency Contacts: Add or Edit Contact in Firebase
 app.post("/api/user/emergency-contacts", async (req, res) => {
-  const { userId, name, relationship, phone, email, isPrimary } = req.body;
+  const { id, contactId, userId, name, relationship, phone, email, isPrimary } = req.body;
+  const targetContactId = id || contactId;
 
   let targetUserId = userId;
   if (!targetUserId || targetUserId === "user_new") {
@@ -922,40 +938,59 @@ app.post("/api/user/emergency-contacts", async (req, res) => {
 
   if (isPrimary) {
     for (const c of userContacts) {
-      if (c.isPrimary) {
+      if (c.isPrimary && c.id !== targetContactId) {
         c.isPrimary = false;
         await dbSet(`contacts/${c.id}`, c);
       }
     }
   }
 
-  const newContact: StoredContact = {
-    id: `contact_${Date.now()}`,
+  const finalContactId = targetContactId || `contact_${Date.now()}`;
+  const existingContact = allContactsObj[finalContactId];
+
+  const updatedContact: StoredContact = {
+    id: finalContactId,
     userId: targetUserId,
-    name: name || "Emergency Contact",
-    relationship: relationship || "Family",
-    phone: phone || "+91 98111 22233",
-    email: email || "emergency.contact@gmail.com",
-    isPrimary: isPrimary || userContacts.length === 0,
-    createdAt: new Date().toISOString(),
+    name: name || existingContact?.name || "Emergency Contact",
+    relationship: relationship || existingContact?.relationship || "Family",
+    phone: phone || existingContact?.phone || "+91 98111 22233",
+    email: email || existingContact?.email || "emergency.contact@gmail.com",
+    isPrimary: isPrimary !== undefined ? Boolean(isPrimary) : (existingContact?.isPrimary || userContacts.length === 0),
+    createdAt: existingContact?.createdAt || new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   };
 
   // Write directly to Firebase
-  await dbSet(`contacts/${newContact.id}`, newContact);
+  await dbSet(`contacts/${finalContactId}`, updatedContact);
 
   // Fetch updated list from Firebase
   const updatedContactsObj = (await dbGet<Record<string, StoredContact>>("contacts")) || {};
   const updatedUserContacts = Object.values(updatedContactsObj).filter((c) => c.userId === targetUserId);
 
   broadcastWs({ type: "CONTACTS_UPDATED", userId: targetUserId, contacts: updatedUserContacts });
-  console.log(`📞 [Firebase RTDB] Added contact /contacts/${newContact.id} for user ${targetUserId}`);
+  console.log(`📞 [Firebase RTDB] Saved contact /contacts/${finalContactId} for user ${targetUserId}`);
 
   return res.json({
     success: true,
     message: "Emergency contact saved successfully to Firebase Database.",
-    contact: newContact,
+    contact: updatedContact,
     contacts: updatedUserContacts,
   });
+});
+
+app.put("/api/user/emergency-contacts/:contactId", async (req, res) => {
+  const { contactId } = req.params;
+  req.body.id = contactId;
+  const allContactsObj = (await dbGet<Record<string, StoredContact>>("contacts")) || {};
+  const existing = allContactsObj[contactId];
+  if (existing) {
+    req.body.userId = req.body.userId || existing.userId;
+  }
+  const handler = app._router.stack.find((s: any) => s.route?.path === "/api/user/emergency-contacts" && s.route?.methods?.post);
+  if (handler) {
+    return handler.handle(req, res);
+  }
+  return res.json({ success: true });
 });
 
 // 6b. Emergency Contacts: Delete Contact from Firebase

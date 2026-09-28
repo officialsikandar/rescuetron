@@ -7,11 +7,11 @@ import {
   TouchableOpacity,
   ScrollView,
   Switch,
-  Alert,
   ActivityIndicator,
 } from 'react-native';
 import { UserProfile } from '../types';
 import { updateUserProfile, getAppSettings, saveAppSettings } from '../services/api';
+import { Toast } from '../components/Toast';
 
 interface MedicalProfileScreenProps {
   user: UserProfile | null;
@@ -31,8 +31,22 @@ export const MedicalProfileScreen: React.FC<MedicalProfileScreenProps> = ({
     user?.medicalConditions || 'Asthma',
   );
   const [medications, setMedications] = useState(user?.medications || 'Albuterol Inhaler');
-  const [isOrganDonor, setIsOrganDonor] = useState(user?.isOrganDonor ?? true);
+  
+  // Donor toggle state (handles both Blood / Organ donor toggle)
+  const initialDonorVal = Boolean(
+    user?.organDonor ?? user?.isOrganDonor ?? user?.isBloodDonor ?? user?.bloodDonor ?? true
+  );
+  const [isOrganDonor, setIsOrganDonor] = useState(initialDonorVal);
   const [loading, setLoading] = useState(false);
+
+  // Toast State
+  const [toastMsg, setToastMsg] = useState<string | null>(null);
+  const [toastType, setToastType] = useState<'success' | 'error' | 'info'>('success');
+
+  const showToast = (msg: string, type: 'success' | 'error' | 'info' = 'success') => {
+    setToastMsg(msg);
+    setToastType(type);
+  };
 
   // Settings State
   const [trackerWaitSecs, setTrackerWaitSecs] = useState(20);
@@ -60,7 +74,7 @@ export const MedicalProfileScreen: React.FC<MedicalProfileScreenProps> = ({
         email: user?.email,
         trackerWaitSeconds: sec,
       });
-      Alert.alert('Database Updated', `Email Open Escalation Wait Window set to ${sec}s.`);
+      showToast(`Escalation wait set to ${sec}s in Firebase`, 'success');
     } catch (e) {
       console.error(e);
     } finally {
@@ -73,7 +87,7 @@ export const MedicalProfileScreen: React.FC<MedicalProfileScreenProps> = ({
   const handleSave = async () => {
     setLoading(true);
     try {
-      const updatedData: Partial<UserProfile> = {
+      const updatedData: any = {
         email: user?.email || 'demo@rescuetron.com',
         fullName,
         age: parseInt(age, 10) || 0,
@@ -82,174 +96,187 @@ export const MedicalProfileScreen: React.FC<MedicalProfileScreenProps> = ({
         allergies,
         medicalConditions,
         medications,
+        // Pass all donor property aliases so Firebase Realtime Database & MongoDB update correctly
+        organDonor: isOrganDonor,
         isOrganDonor,
+        isBloodDonor: isOrganDonor,
+        bloodDonor: isOrganDonor,
+        isDonor: isOrganDonor,
       };
 
       const result = await updateUserProfile(updatedData);
       setLoading(false);
 
       if (result.success || result.user) {
-        Alert.alert('Success', 'Medical Profile updated and synced to Firebase!');
+        showToast('Medical Profile & Donor toggle synced to Firebase!', 'success');
         if (onProfileUpdated && result.user) {
           onProfileUpdated(result.user);
         }
       } else {
-        Alert.alert('Error', result.message || 'Failed to update profile.');
+        showToast(result.message || 'Failed to update profile.', 'error');
       }
     } catch (e: any) {
       setLoading(false);
-      Alert.alert('Saved locally', 'Medical profile saved on device.');
+      showToast('Profile saved on device', 'info');
     }
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>Medical Emergency ID</Text>
-      <Text style={styles.subtitle}>
-        This profile will be shared with First Responders & Emergency Contacts upon crash detection.
-      </Text>
+    <View style={styles.container}>
+      <Toast message={toastMsg} type={toastType} onHide={() => setToastMsg(null)} duration={2000} />
 
-      {/* Basic Info */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Personal Details</Text>
-
-        <Text style={styles.label}>Full Name</Text>
-        <TextInput
-          style={styles.input}
-          value={fullName}
-          onChangeText={setFullName}
-          placeholder="Full Name"
-          placeholderTextColor="#64748b"
-        />
-
-        <View style={styles.row}>
-          <View style={styles.halfInput}>
-            <Text style={styles.label}>Age</Text>
-            <TextInput
-              style={styles.input}
-              value={age}
-              onChangeText={setAge}
-              keyboardType="numeric"
-              placeholder="Age"
-              placeholderTextColor="#64748b"
-            />
-          </View>
-          <View style={styles.halfInput}>
-            <Text style={styles.label}>Phone Number</Text>
-            <TextInput
-              style={styles.input}
-              value={phone}
-              onChangeText={setPhone}
-              keyboardType="phone-pad"
-              placeholder="Phone"
-              placeholderTextColor="#64748b"
-            />
-          </View>
-        </View>
-      </View>
-
-      {/* Critical Medical Info */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Emergency Medical Specs</Text>
-
-        <Text style={styles.label}>Blood Group</Text>
-        <View style={styles.bloodGroupContainer}>
-          {bloodGroups.map((bg) => (
-            <TouchableOpacity
-              key={bg}
-              style={[
-                styles.bloodPill,
-                bloodGroup === bg && styles.bloodPillActive,
-              ]}
-              onPress={() => setBloodGroup(bg)}>
-              <Text
-                style={[
-                  styles.bloodPillText,
-                  bloodGroup === bg && styles.bloodPillTextActive,
-                ]}>
-                {bg}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        <Text style={styles.label}>Known Allergies</Text>
-        <TextInput
-          style={styles.input}
-          value={allergies}
-          onChangeText={setAllergies}
-          placeholder="e.g. Penicillin, Latex, Peanuts"
-          placeholderTextColor="#64748b"
-        />
-
-        <Text style={styles.label}>Pre-existing Medical Conditions</Text>
-        <TextInput
-          style={styles.input}
-          value={medicalConditions}
-          onChangeText={setMedicalConditions}
-          placeholder="e.g. Asthma, Diabetes, Epilepsy"
-          placeholderTextColor="#64748b"
-        />
-
-        <Text style={styles.label}>Current Medications</Text>
-        <TextInput
-          style={styles.input}
-          value={medications}
-          onChangeText={setMedications}
-          placeholder="e.g. Insulin, Inhaler, Blood thinners"
-          placeholderTextColor="#64748b"
-        />
-
-        <View style={styles.switchRow}>
-          <Text style={styles.switchLabel}>Registered Organ Donor</Text>
-          <Switch
-            value={isOrganDonor}
-            onValueChange={setIsOrganDonor}
-            trackColor={{ false: '#334155', true: '#0284c7' }}
-            thumbColor={isOrganDonor ? '#38bdf8' : '#94a3b8'}
-          />
-        </View>
-      </View>
-
-      {/* Escalation Wait Time Settings Card */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>⚙️ Auto Call Escalation Settings</Text>
-        <Text style={styles.label}>Email Open Escalation Wait Window:</Text>
-        <View style={styles.presetRow}>
-          {[10, 20, 30, 60].map((sec) => (
-            <TouchableOpacity
-              key={sec}
-              style={[
-                styles.presetPill,
-                trackerWaitSecs === sec && styles.presetPillActive,
-              ]}
-              onPress={() => handleSaveWaitSecs(sec)}>
-              <Text
-                style={[
-                  styles.presetPillText,
-                  trackerWaitSecs === sec && styles.presetPillTextActive,
-                ]}>
-                {sec}s
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-        <Text style={styles.settingFooterText}>
-          Select duration to wait for email open before automated phone call escalation is triggered. Saves directly to database.
+      <ScrollView contentContainerStyle={styles.content}>
+        <Text style={styles.title}>Medical Emergency ID</Text>
+        <Text style={styles.subtitle}>
+          This profile will be shared with First Responders & Emergency Contacts upon crash detection.
         </Text>
-      </View>
 
-      <TouchableOpacity
-        style={styles.saveButton}
-        onPress={handleSave}
-        disabled={loading}>
-        {loading ? (
-          <ActivityIndicator color="#ffffff" />
-        ) : (
-          <Text style={styles.saveButtonText}>Save & Sync Profile to Firebase</Text>
-        )}
-      </TouchableOpacity>
-    </ScrollView>
+        {/* Basic Info */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Personal Details</Text>
+
+          <Text style={styles.label}>Full Name</Text>
+          <TextInput
+            style={styles.input}
+            value={fullName}
+            onChangeText={setFullName}
+            placeholder="Full Name"
+            placeholderTextColor="#64748b"
+          />
+
+          <View style={styles.row}>
+            <View style={styles.halfInput}>
+              <Text style={styles.label}>Age</Text>
+              <TextInput
+                style={styles.input}
+                value={age}
+                onChangeText={setAge}
+                keyboardType="numeric"
+                placeholder="Age"
+                placeholderTextColor="#64748b"
+              />
+            </View>
+            <View style={styles.halfInput}>
+              <Text style={styles.label}>Phone Number</Text>
+              <TextInput
+                style={styles.input}
+                value={phone}
+                onChangeText={setPhone}
+                keyboardType="phone-pad"
+                placeholder="Phone"
+                placeholderTextColor="#64748b"
+              />
+            </View>
+          </View>
+        </View>
+
+        {/* Critical Medical Info */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Emergency Medical Specs</Text>
+
+          <Text style={styles.label}>Blood Group</Text>
+          <View style={styles.bloodGroupContainer}>
+            {bloodGroups.map((bg) => (
+              <TouchableOpacity
+                key={bg}
+                style={[
+                  styles.bloodPill,
+                  bloodGroup === bg && styles.bloodPillActive,
+                ]}
+                onPress={() => setBloodGroup(bg)}>
+                <Text
+                  style={[
+                    styles.bloodPillText,
+                    bloodGroup === bg && styles.bloodPillTextActive,
+                  ]}>
+                  {bg}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          <Text style={styles.label}>Known Allergies</Text>
+          <TextInput
+            style={styles.input}
+            value={allergies}
+            onChangeText={setAllergies}
+            placeholder="e.g. Penicillin, Latex, Peanuts"
+            placeholderTextColor="#64748b"
+          />
+
+          <Text style={styles.label}>Pre-existing Medical Conditions</Text>
+          <TextInput
+            style={styles.input}
+            value={medicalConditions}
+            onChangeText={setMedicalConditions}
+            placeholder="e.g. Asthma, Diabetes, Epilepsy"
+            placeholderTextColor="#64748b"
+          />
+
+          <Text style={styles.label}>Current Medications</Text>
+          <TextInput
+            style={styles.input}
+            value={medications}
+            onChangeText={setMedications}
+            placeholder="e.g. Insulin, Inhaler, Blood thinners"
+            placeholderTextColor="#64748b"
+          />
+
+          {/* Donor Toggle (Synced to Firebase DB) */}
+          <View style={styles.switchRow}>
+            <View>
+              <Text style={styles.switchLabel}>Registered Blood / Organ Donor</Text>
+              <Text style={styles.switchSubLabel}>Syncs donor status directly to Firebase DB</Text>
+            </View>
+            <Switch
+              value={isOrganDonor}
+              onValueChange={setIsOrganDonor}
+              trackColor={{ false: '#334155', true: '#0284c7' }}
+              thumbColor={isOrganDonor ? '#38bdf8' : '#94a3b8'}
+            />
+          </View>
+        </View>
+
+        {/* Escalation Wait Time Settings Card */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>⚙️ Auto Call Escalation Settings</Text>
+          <Text style={styles.label}>Email Open Escalation Wait Window:</Text>
+          <View style={styles.presetRow}>
+            {[10, 20, 30, 60].map((sec) => (
+              <TouchableOpacity
+                key={sec}
+                style={[
+                  styles.presetPill,
+                  trackerWaitSecs === sec && styles.presetPillActive,
+                ]}
+                onPress={() => handleSaveWaitSecs(sec)}>
+                <Text
+                  style={[
+                    styles.presetPillText,
+                    trackerWaitSecs === sec && styles.presetPillTextActive,
+                  ]}>
+                  {sec}s
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+          <Text style={styles.settingFooterText}>
+            Select duration to wait for email open before automated phone call escalation is triggered. Saves directly to database.
+          </Text>
+        </View>
+
+        <TouchableOpacity
+          style={styles.saveButton}
+          onPress={handleSave}
+          disabled={loading}>
+          {loading ? (
+            <ActivityIndicator color="#ffffff" />
+          ) : (
+            <Text style={styles.saveButtonText}>Save & Sync Profile to Firebase</Text>
+          )}
+        </TouchableOpacity>
+      </ScrollView>
+    </View>
   );
 };
 
@@ -313,6 +340,7 @@ const styles = StyleSheet.create({
     borderTopColor: '#1e293b',
   },
   switchLabel: { color: '#ffffff', fontSize: 14, fontWeight: '600' },
+  switchSubLabel: { color: '#64748b', fontSize: 11, marginTop: 2 },
   presetRow: { flexDirection: 'row', gap: 8, marginVertical: 8 },
   presetPill: {
     flex: 1,

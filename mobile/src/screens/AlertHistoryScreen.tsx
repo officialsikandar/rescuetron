@@ -8,10 +8,10 @@ import {
   Linking,
   ActivityIndicator,
   RefreshControl,
-  Alert,
 } from 'react-native';
 import { EmergencyAlert } from '../types';
 import { getAlertHistory, simulateEmailOpen, triggerAutoCallEscalation } from '../services/api';
+import { Toast } from '../components/Toast';
 
 interface AlertHistoryScreenProps {
   userId: string;
@@ -43,6 +43,15 @@ export const AlertHistoryScreen: React.FC<AlertHistoryScreenProps> = ({ userId }
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
+  // Toast State
+  const [toastMsg, setToastMsg] = useState<string | null>(null);
+  const [toastType, setToastType] = useState<'success' | 'error' | 'info'>('success');
+
+  const showToast = (msg: string, type: 'success' | 'error' | 'info' = 'success') => {
+    setToastMsg(msg);
+    setToastType(type);
+  };
+
   useEffect(() => {
     loadHistory();
     const interval = setInterval(loadHistory, 3000);
@@ -67,11 +76,11 @@ export const AlertHistoryScreen: React.FC<AlertHistoryScreenProps> = ({ userId }
     try {
       const res = await simulateEmailOpen(alertId);
       if (res.success) {
-        Alert.alert('Email Opened!', 'Simulated recipient opening the emergency email.');
+        showToast('✉️ Email opened by emergency contact!', 'success');
         loadHistory();
       }
     } catch (e) {
-      Alert.alert('Status', 'Simulated email open updated.');
+      showToast('Simulated email open updated', 'info');
     }
   };
 
@@ -79,11 +88,11 @@ export const AlertHistoryScreen: React.FC<AlertHistoryScreenProps> = ({ userId }
     try {
       const res = await triggerAutoCallEscalation(alertId);
       if (res.success) {
-        Alert.alert('📞 Automated Call Escalated', 'Emergency voice call dispatch triggered to primary contacts!');
+        showToast('📞 Automated voice call escalated!', 'error');
         loadHistory();
       }
     } catch (e) {
-      Alert.alert('Escalation', 'Call escalation command sent.');
+      showToast('Call escalation command sent', 'info');
     }
   };
 
@@ -114,148 +123,153 @@ export const AlertHistoryScreen: React.FC<AlertHistoryScreenProps> = ({ userId }
   };
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.content}
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={() => {
-            setRefreshing(true);
-            loadHistory();
-          }}
-          tintColor="#38bdf8"
-        />
-      }>
-      <Text style={styles.title}>Emergency Incident Log</Text>
-      <Text style={styles.subtitle}>
-        Real-time email open tracking, crash telemetry, and live GPS tracking dispatches.
-      </Text>
+    <View style={styles.container}>
+      <Toast message={toastMsg} type={toastType} onHide={() => setToastMsg(null)} duration={2000} />
 
-      {loading && alerts.length === 0 ? (
-        <ActivityIndicator color="#38bdf8" style={{ marginTop: 20 }} />
-      ) : alerts.length === 0 ? (
-        <View style={styles.emptyCard}>
-          <Text style={styles.emptyTitle}>No Emergency Incidents</Text>
-          <Text style={styles.emptyText}>
-            No crash alerts have been triggered yet. Drive safely!
-          </Text>
-        </View>
-      ) : (
-        alerts.map((alert) => (
-          <View key={alert.id} style={styles.alertCard}>
-            <View style={styles.alertHeader}>
-              <View>
-                <Text style={styles.alertId}>Incident #{alert.id.slice(-6)}</Text>
-                <Text style={styles.alertTime}>
-                  {new Date(alert.timestamp).toLocaleString()}
-                </Text>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.content}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => {
+              setRefreshing(true);
+              loadHistory();
+            }}
+            tintColor="#38bdf8"
+          />
+        }>
+        <Text style={styles.title}>Emergency Incident Log</Text>
+        <Text style={styles.subtitle}>
+          Real-time email open tracking, crash telemetry, and live GPS tracking dispatches.
+        </Text>
+
+        {loading && alerts.length === 0 ? (
+          <ActivityIndicator color="#38bdf8" style={{ marginTop: 20 }} />
+        ) : alerts.length === 0 ? (
+          <View style={styles.emptyCard}>
+            <Text style={styles.emptyTitle}>No Emergency Incidents</Text>
+            <Text style={styles.emptyText}>
+              No crash alerts have been triggered yet. Drive safely!
+            </Text>
+          </View>
+        ) : (
+          alerts.map((alert) => (
+            <View key={alert.id} style={styles.alertCard}>
+              <View style={styles.alertHeader}>
+                <View>
+                  <Text style={styles.alertId}>Incident #{alert.id.slice(-6)}</Text>
+                  <Text style={styles.alertTime}>
+                    {new Date(alert.timestamp).toLocaleString()}
+                  </Text>
+                </View>
+                <View
+                  style={[
+                    styles.statusBadge,
+                    {
+                      backgroundColor: `${getStatusColor(alert.status, alert.emailOpened)}20`,
+                      borderColor: getStatusColor(alert.status, alert.emailOpened),
+                    },
+                  ]}>
+                  <Text
+                    style={[
+                      styles.statusText,
+                      { color: getStatusColor(alert.status, alert.emailOpened) },
+                    ]}>
+                    {alert.status === 'ESCALATED_CALL'
+                      ? '📞 CALL ESCALATED'
+                      : alert.emailOpened
+                      ? 'EMAIL OPENED'
+                      : 'UNOPENED'}
+                  </Text>
+                </View>
               </View>
+
+              {/* Email Open Tracker Indicator */}
               <View
                 style={[
-                  styles.statusBadge,
-                  {
-                    backgroundColor: `${getStatusColor(alert.status, alert.emailOpened)}20`,
-                    borderColor: getStatusColor(alert.status, alert.emailOpened),
-                  },
+                  styles.openTrackerCard,
+                  alert.emailOpened ? styles.openTrackerSuccess : styles.openTrackerPending,
                 ]}>
                 <Text
                   style={[
-                    styles.statusText,
-                    { color: getStatusColor(alert.status, alert.emailOpened) },
+                    styles.openTrackerTitle,
+                    alert.emailOpened ? styles.textSuccess : styles.textPending,
                   ]}>
-                  {alert.status === 'ESCALATED_CALL'
-                    ? '📞 CALL ESCALATED'
-                    : alert.emailOpened
-                    ? 'EMAIL OPENED'
-                    : 'UNOPENED'}
+                  {alert.emailOpened
+                    ? `✅ Email Opened at ${new Date(alert.emailOpenedAt || '').toLocaleTimeString()}`
+                    : '⚠️ Email Not Opened Yet by Recipient'}
                 </Text>
-              </View>
-            </View>
-
-            {/* Email Open Tracker Indicator */}
-            <View
-              style={[
-                styles.openTrackerCard,
-                alert.emailOpened ? styles.openTrackerSuccess : styles.openTrackerPending,
-              ]}>
-              <Text
-                style={[
-                  styles.openTrackerTitle,
-                  alert.emailOpened ? styles.textSuccess : styles.textPending,
-                ]}>
-                {alert.emailOpened
-                  ? `✅ Email Opened at ${new Date(alert.emailOpenedAt || '').toLocaleTimeString()}`
-                  : '⚠️ Email Not Opened Yet by Recipient'}
-              </Text>
-              <View style={styles.actionRow}>
-                {!alert.emailOpened && (
+                <View style={styles.actionRow}>
+                  {!alert.emailOpened && (
+                    <TouchableOpacity
+                      style={styles.simulateOpenBtn}
+                      onPress={() => handleSimulateOpen(alert.id)}>
+                      <Text style={styles.simulateOpenBtnText}>Simulate Email Open</Text>
+                    </TouchableOpacity>
+                  )}
                   <TouchableOpacity
-                    style={styles.simulateOpenBtn}
-                    onPress={() => handleSimulateOpen(alert.id)}>
-                    <Text style={styles.simulateOpenBtnText}>Simulate Email Open</Text>
+                    style={styles.escalateCallBtn}
+                    onPress={() => handleEscalateCall(alert.id)}>
+                    <Text style={styles.escalateCallBtnText}>📞 Call Emergency Contact</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* Telemetry Snapshot */}
+              <View style={styles.telemetryRow}>
+                <View style={styles.telemetryBox}>
+                  <Text style={styles.telemetryLabel}>IMPACT FORCE</Text>
+                  <Text style={styles.telemetryValue}>
+                    {alert.sensorSnapshot?.totalG?.toFixed(2) || '4.20'} G
+                  </Text>
+                </View>
+                <View style={styles.telemetryBox}>
+                  <Text style={styles.telemetryLabel}>SPEED AT IMPACT</Text>
+                  <Text style={styles.telemetryValue}>
+                    {alert.sensorSnapshot?.speedKmh?.toFixed(1) || '65.0'} km/h
+                  </Text>
+                </View>
+              </View>
+
+              {/* GPS Location */}
+              <Text style={styles.locationTitle}>📍 GPS Location:</Text>
+              <Text style={styles.locationAddress}>
+                {alert.location?.address || `${alert.location?.latitude?.toFixed(4)}, ${alert.location?.longitude?.toFixed(4)}`}
+              </Text>
+
+              {/* Action Buttons */}
+              <View style={styles.btnRow}>
+                <TouchableOpacity
+                  style={styles.mapBtn}
+                  onPress={() =>
+                    openMap(
+                      alert.location?.latitude || 37.7749,
+                      alert.location?.longitude || -122.4194,
+                    )
+                  }>
+                  <Text style={styles.mapBtnText}>Google Maps</Text>
+                </TouchableOpacity>
+
+                {alert.trackerUrl && (
+                  <TouchableOpacity
+                    style={styles.trackerBtn}
+                    onPress={() => openTracker(alert.trackerUrl)}>
+                    <Text style={styles.trackerBtnText}>Live Tracker</Text>
                   </TouchableOpacity>
                 )}
-                <TouchableOpacity
-                  style={styles.escalateCallBtn}
-                  onPress={() => handleEscalateCall(alert.id)}>
-                  <Text style={styles.escalateCallBtnText}>📞 Call Emergency Contact</Text>
-                </TouchableOpacity>
               </View>
             </View>
-
-            {/* Telemetry Snapshot */}
-            <View style={styles.telemetryRow}>
-              <View style={styles.telemetryBox}>
-                <Text style={styles.telemetryLabel}>IMPACT FORCE</Text>
-                <Text style={styles.telemetryValue}>
-                  {alert.sensorSnapshot?.totalG?.toFixed(2) || '4.20'} G
-                </Text>
-              </View>
-              <View style={styles.telemetryBox}>
-                <Text style={styles.telemetryLabel}>SPEED AT IMPACT</Text>
-                <Text style={styles.telemetryValue}>
-                  {alert.sensorSnapshot?.speedKmh?.toFixed(1) || '65.0'} km/h
-                </Text>
-              </View>
-            </View>
-
-            {/* GPS Location */}
-            <Text style={styles.locationTitle}>📍 GPS Location:</Text>
-            <Text style={styles.locationAddress}>
-              {alert.location?.address || `${alert.location?.latitude?.toFixed(4)}, ${alert.location?.longitude?.toFixed(4)}`}
-            </Text>
-
-            {/* Action Buttons */}
-            <View style={styles.btnRow}>
-              <TouchableOpacity
-                style={styles.mapBtn}
-                onPress={() =>
-                  openMap(
-                    alert.location?.latitude || 37.7749,
-                    alert.location?.longitude || -122.4194,
-                  )
-                }>
-                <Text style={styles.mapBtnText}>Google Maps</Text>
-              </TouchableOpacity>
-
-              {alert.trackerUrl && (
-                <TouchableOpacity
-                  style={styles.trackerBtn}
-                  onPress={() => openTracker(alert.trackerUrl)}>
-                  <Text style={styles.trackerBtnText}>Live Tracker</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          </View>
-        ))
-      )}
-    </ScrollView>
+          ))
+        )}
+      </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#020617' },
+  scroll: { flex: 1 },
   content: { padding: 16, paddingBottom: 40 },
   title: { fontSize: 22, fontWeight: 'bold', color: '#ffffff', marginBottom: 4 },
   subtitle: { fontSize: 13, color: '#94a3b8', marginBottom: 16, lineHeight: 18 },

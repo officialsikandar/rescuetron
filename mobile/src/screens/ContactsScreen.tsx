@@ -7,12 +7,12 @@ import {
   TouchableOpacity,
   ScrollView,
   Switch,
-  Alert,
   ActivityIndicator,
   Linking,
 } from 'react-native';
 import { EmergencyContact } from '../types';
-import { saveEmergencyContact, fetchEmergencyContacts } from '../services/api';
+import { saveEmergencyContact, fetchEmergencyContacts, deleteEmergencyContact } from '../services/api';
+import { Toast } from '../components/Toast';
 
 interface ContactsScreenProps {
   userId: string;
@@ -40,6 +40,16 @@ export const ContactsScreen: React.FC<ContactsScreenProps> = ({ userId }) => {
 
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+
+  // Toast state
+  const [toastMsg, setToastMsg] = useState<string | null>(null);
+  const [toastType, setToastType] = useState<'success' | 'error' | 'info'>('success');
+
+  const showToast = (msg: string, type: 'success' | 'error' | 'info' = 'success') => {
+    setToastMsg(msg);
+    setToastType(type);
+  };
 
   // Form State
   const [name, setName] = useState('');
@@ -63,15 +73,40 @@ export const ContactsScreen: React.FC<ContactsScreenProps> = ({ userId }) => {
     }
   };
 
-  const handleAddContact = async () => {
+  const handleEditClick = (contact: EmergencyContact) => {
+    setEditingId(contact.id);
+    setName(contact.name);
+    setRelationship(contact.relationship || '');
+    setPhone(contact.phone);
+    setEmail(contact.email || '');
+    setIsPrimary(Boolean(contact.isPrimary));
+    setShowForm(true);
+  };
+
+  const handleDeleteContact = async (contactId: string) => {
+    try {
+      setLoading(true);
+      await deleteEmergencyContact(contactId);
+      setContacts((prev) => prev.filter((c) => c.id !== contactId));
+      setLoading(false);
+      showToast('Contact deleted successfully', 'success');
+    } catch (e) {
+      setLoading(false);
+      setContacts((prev) => prev.filter((c) => c.id !== contactId));
+      showToast('Contact removed', 'info');
+    }
+  };
+
+  const handleSaveContact = async () => {
     if (!name || !phone) {
-      Alert.alert('Required Fields', 'Please enter at least Contact Name and Phone Number.');
+      showToast('Please enter Name and Phone Number', 'error');
       return;
     }
 
     setLoading(true);
     try {
-      const newContact = {
+      const contactData = {
+        id: editingId || undefined,
         userId,
         name,
         relationship: relationship || 'Emergency Contact',
@@ -80,41 +115,57 @@ export const ContactsScreen: React.FC<ContactsScreenProps> = ({ userId }) => {
         isPrimary,
       };
 
-      const result = await saveEmergencyContact(newContact);
+      const result = await saveEmergencyContact(contactData);
       setLoading(false);
 
       if (result.success || result.contacts) {
-        Alert.alert('Saved', 'Emergency contact added and synced!');
+        showToast(editingId ? 'Contact updated!' : 'Contact saved & synced!', 'success');
         if (result.contacts) {
           setContacts(result.contacts);
         } else {
-          setContacts((prev) => [...prev, { ...newContact, id: `c_${Date.now()}` }]);
+          if (editingId) {
+            setContacts((prev) =>
+              prev.map((c) => (c.id === editingId ? { ...c, ...contactData } as EmergencyContact : c))
+            );
+          } else {
+            setContacts((prev) => [
+              ...prev,
+              { ...contactData, id: result.contact?.id || `c_${Date.now()}` } as EmergencyContact,
+            ]);
+          }
         }
         setShowForm(false);
         resetForm();
       } else {
-        Alert.alert('Error', result.message || 'Failed to save contact.');
+        showToast(result.message || 'Failed to save contact', 'error');
       }
     } catch (e) {
       setLoading(false);
-      Alert.alert('Saved', 'Contact stored on device.');
-      setContacts((prev) => [
-        ...prev,
-        {
-          id: `c_${Date.now()}`,
-          name,
-          relationship: relationship || 'Contact',
-          phone,
-          email,
-          isPrimary,
-        },
-      ]);
+      showToast('Contact saved locally', 'info');
+      if (editingId) {
+        setContacts((prev) =>
+          prev.map((c) => (c.id === editingId ? { ...c, name, relationship, phone, email, isPrimary } : c))
+        );
+      } else {
+        setContacts((prev) => [
+          ...prev,
+          {
+            id: `c_${Date.now()}`,
+            name,
+            relationship: relationship || 'Contact',
+            phone,
+            email,
+            isPrimary,
+          },
+        ]);
+      }
       setShowForm(false);
       resetForm();
     }
   };
 
   const resetForm = () => {
+    setEditingId(null);
     setName('');
     setRelationship('');
     setPhone('');
@@ -131,124 +182,148 @@ export const ContactsScreen: React.FC<ContactsScreenProps> = ({ userId }) => {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>Emergency Contacts</Text>
-      <Text style={styles.subtitle}>
-        When an accident is detected, Rescuetron will instantly dispatch SMS, Email, and GPS tracking links to these contacts.
-      </Text>
+    <View style={styles.container}>
+      <Toast message={toastMsg} type={toastType} onHide={() => setToastMsg(null)} duration={2000} />
 
-      {/* Contacts List */}
-      {contacts.map((contact) => (
-        <View key={contact.id} style={styles.contactCard}>
-          <View style={styles.contactHeader}>
-            <View>
-              <Text style={styles.contactName}>{contact.name}</Text>
-              <Text style={styles.contactRelation}>{contact.relationship}</Text>
-            </View>
-            {contact.isPrimary && (
-              <View style={styles.primaryBadge}>
-                <Text style={styles.primaryBadgeText}>PRIMARY SOS</Text>
+      <ScrollView contentContainerStyle={styles.content}>
+        <Text style={styles.title}>Emergency Contacts</Text>
+        <Text style={styles.subtitle}>
+          When an accident is detected, Rescuetron will instantly dispatch SMS, Email, and GPS tracking links to these contacts.
+        </Text>
+
+        {/* Contacts List */}
+        {contacts.map((contact) => (
+          <View key={contact.id} style={styles.contactCard}>
+            <View style={styles.contactHeader}>
+              <View style={styles.nameBlock}>
+                <Text style={styles.contactName}>{contact.name}</Text>
+                <Text style={styles.contactRelation}>{contact.relationship}</Text>
               </View>
-            )}
-          </View>
-
-          <Text style={styles.contactDetail}>📞 {contact.phone}</Text>
-          <Text style={styles.contactDetail}>✉️ {contact.email}</Text>
-
-          <View style={styles.actionRow}>
-            <TouchableOpacity
-              style={styles.actionBtnCall}
-              onPress={() => makeCall(contact.phone)}>
-              <Text style={styles.actionBtnText}>Call SOS</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.actionBtnSms}
-              onPress={() => sendSMS(contact.phone)}>
-              <Text style={styles.actionBtnText}>SMS Alert</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      ))}
-
-      {/* Add Contact Form Toggle */}
-      {!showForm ? (
-        <TouchableOpacity
-          style={styles.addToggleBtn}
-          onPress={() => setShowForm(true)}>
-          <Text style={styles.addToggleBtnText}>+ Add Emergency Contact</Text>
-        </TouchableOpacity>
-      ) : (
-        <View style={styles.formCard}>
-          <Text style={styles.formTitle}>Add New Emergency Contact</Text>
-
-          <Text style={styles.label}>Full Name *</Text>
-          <TextInput
-            style={styles.input}
-            value={name}
-            onChangeText={setName}
-            placeholder="e.g. Jane Doe"
-            placeholderTextColor="#64748b"
-          />
-
-          <Text style={styles.label}>Relationship</Text>
-          <TextInput
-            style={styles.input}
-            value={relationship}
-            onChangeText={setRelationship}
-            placeholder="e.g. Parent / Spouse / Friend"
-            placeholderTextColor="#64748b"
-          />
-
-          <Text style={styles.label}>Phone Number *</Text>
-          <TextInput
-            style={styles.input}
-            value={phone}
-            onChangeText={setPhone}
-            keyboardType="phone-pad"
-            placeholder="e.g. +1 555-0199"
-            placeholderTextColor="#64748b"
-          />
-
-          <Text style={styles.label}>Email Address (For Live Tracker Email Alert)</Text>
-          <TextInput
-            style={styles.input}
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            placeholder="e.g. notify@example.com"
-            placeholderTextColor="#64748b"
-          />
-
-          <View style={styles.switchRow}>
-            <Text style={styles.switchLabel}>Set as Primary SOS Contact</Text>
-            <Switch
-              value={isPrimary}
-              onValueChange={setIsPrimary}
-              trackColor={{ false: '#334155', true: '#e11d48' }}
-              thumbColor={isPrimary ? '#f43f5e' : '#94a3b8'}
-            />
-          </View>
-
-          <View style={styles.formActions}>
-            <TouchableOpacity
-              style={styles.cancelBtn}
-              onPress={() => setShowForm(false)}>
-              <Text style={styles.cancelBtnText}>Cancel</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.submitBtn}
-              onPress={handleAddContact}
-              disabled={loading}>
-              {loading ? (
-                <ActivityIndicator color="#ffffff" />
-              ) : (
-                <Text style={styles.submitBtnText}>Save Contact</Text>
+              {contact.isPrimary && (
+                <View style={styles.primaryBadge}>
+                  <Text style={styles.primaryBadgeText}>PRIMARY SOS</Text>
+                </View>
               )}
-            </TouchableOpacity>
+            </View>
+
+            <Text style={styles.contactDetail}>📞 {contact.phone}</Text>
+            <Text style={styles.contactDetail}>✉️ {contact.email}</Text>
+
+            <View style={styles.actionRow}>
+              <TouchableOpacity
+                style={styles.actionBtnCall}
+                onPress={() => makeCall(contact.phone)}>
+                <Text style={styles.actionBtnText}>Call SOS</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.actionBtnSms}
+                onPress={() => sendSMS(contact.phone)}>
+                <Text style={styles.actionBtnText}>SMS Alert</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.actionBtnEdit}
+                onPress={() => handleEditClick(contact)}>
+                <Text style={styles.actionBtnText}>✏️ Edit</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.actionBtnDelete}
+                onPress={() => handleDeleteContact(contact.id)}>
+                <Text style={styles.actionBtnText}>🗑️</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
-      )}
-    </ScrollView>
+        ))}
+
+        {/* Add Contact Form Toggle */}
+        {!showForm ? (
+          <TouchableOpacity
+            style={styles.addToggleBtn}
+            onPress={() => {
+              resetForm();
+              setShowForm(true);
+            }}>
+            <Text style={styles.addToggleBtnText}>+ Add Emergency Contact</Text>
+          </TouchableOpacity>
+        ) : (
+          <View style={styles.formCard}>
+            <Text style={styles.formTitle}>
+              {editingId ? 'Edit Emergency Contact' : 'Add New Emergency Contact'}
+            </Text>
+
+            <Text style={styles.label}>Full Name *</Text>
+            <TextInput
+              style={styles.input}
+              value={name}
+              onChangeText={setName}
+              placeholder="e.g. Jane Doe"
+              placeholderTextColor="#64748b"
+            />
+
+            <Text style={styles.label}>Relationship</Text>
+            <TextInput
+              style={styles.input}
+              value={relationship}
+              onChangeText={setRelationship}
+              placeholder="e.g. Parent / Spouse / Friend"
+              placeholderTextColor="#64748b"
+            />
+
+            <Text style={styles.label}>Phone Number *</Text>
+            <TextInput
+              style={styles.input}
+              value={phone}
+              onChangeText={setPhone}
+              keyboardType="phone-pad"
+              placeholder="e.g. +1 555-0199"
+              placeholderTextColor="#64748b"
+            />
+
+            <Text style={styles.label}>Email Address (For Live Tracker Email Alert)</Text>
+            <TextInput
+              style={styles.input}
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              placeholder="e.g. notify@example.com"
+              placeholderTextColor="#64748b"
+            />
+
+            <View style={styles.switchRow}>
+              <Text style={styles.switchLabel}>Set as Primary SOS Contact</Text>
+              <Switch
+                value={isPrimary}
+                onValueChange={setIsPrimary}
+                trackColor={{ false: '#334155', true: '#e11d48' }}
+                thumbColor={isPrimary ? '#f43f5e' : '#94a3b8'}
+              />
+            </View>
+
+            <View style={styles.formActions}>
+              <TouchableOpacity
+                style={styles.cancelBtn}
+                onPress={() => {
+                  setShowForm(false);
+                  resetForm();
+                }}>
+                <Text style={styles.cancelBtnText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.submitBtn}
+                onPress={handleSaveContact}
+                disabled={loading}>
+                {loading ? (
+                  <ActivityIndicator color="#ffffff" />
+                ) : (
+                  <Text style={styles.submitBtnText}>
+                    {editingId ? 'Update Contact' : 'Save Contact'}
+                  </Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+      </ScrollView>
+    </View>
   );
 };
 
@@ -271,6 +346,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     marginBottom: 8,
   },
+  nameBlock: { flex: 1, marginRight: 8 },
   contactName: { fontSize: 16, fontWeight: 'bold', color: '#ffffff' },
   contactRelation: { fontSize: 12, color: '#38bdf8', marginTop: 2 },
   primaryBadge: {
@@ -285,27 +361,45 @@ const styles = StyleSheet.create({
   contactDetail: { color: '#cbd5e1', fontSize: 13, marginTop: 4 },
   actionRow: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 6,
     marginTop: 12,
     paddingTop: 12,
     borderTopWidth: 1,
     borderTopColor: '#1e293b',
+    alignItems: 'center',
   },
   actionBtnCall: {
-    flex: 1,
+    flex: 2,
     backgroundColor: '#0284c7',
     paddingVertical: 8,
     borderRadius: 8,
     alignItems: 'center',
   },
   actionBtnSms: {
-    flex: 1,
+    flex: 2,
     backgroundColor: '#334155',
     paddingVertical: 8,
     borderRadius: 8,
     alignItems: 'center',
   },
-  actionBtnText: { color: '#ffffff', fontWeight: 'bold', fontSize: 12 },
+  actionBtnEdit: {
+    flex: 1.5,
+    backgroundColor: '#0f766e',
+    paddingVertical: 8,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  actionBtnDelete: {
+    width: 36,
+    height: 32,
+    backgroundColor: 'rgba(225, 29, 72, 0.2)',
+    borderWidth: 1,
+    borderColor: '#e11d48',
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  actionBtnText: { color: '#ffffff', fontWeight: 'bold', fontSize: 11 },
   addToggleBtn: {
     backgroundColor: '#1e293b',
     borderWidth: 1,

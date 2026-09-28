@@ -6,7 +6,6 @@ import {
   TextInput,
   TouchableOpacity,
   ActivityIndicator,
-  Alert,
   ScrollView,
 } from 'react-native';
 import { sendSignupOtp, verifyOtpAndSignup, loginUser, setAuthToken } from '../services/api';
@@ -14,6 +13,7 @@ import { saveUserSession, StoredSession } from '../services/storage';
 import { UserProfile } from '../types';
 import { NetworkLogsModal } from '../components/NetworkLogsModal';
 import { getBaseUrl } from '../config';
+import { Toast } from '../components/Toast';
 
 interface AuthScreenProps {
   onLoginSuccess: (session: StoredSession) => void;
@@ -28,6 +28,15 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [showLogsModal, setShowLogsModal] = useState(false);
+
+  // Toast State
+  const [toastMsg, setToastMsg] = useState<string | null>(null);
+  const [toastType, setToastType] = useState<'success' | 'error' | 'info'>('success');
+
+  const showToast = (msg: string, type: 'success' | 'error' | 'info' = 'success') => {
+    setToastMsg(msg);
+    setToastType(type);
+  };
 
   const handleLogin = async () => {
     const loginEmail = email.trim() || 'demo@rescuetron.com';
@@ -46,12 +55,13 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
           isAuthenticated: true,
         };
         await saveUserSession(session);
+        showToast('Login successful!', 'success');
         onLoginSuccess(session);
       } else {
-        Alert.alert('Login Failed', res.message || 'Invalid email or password.');
+        showToast(res.message || 'Invalid email or password.', 'error');
       }
     } catch (e: any) {
-      Alert.alert('Login Error', e.message || 'Server connection issue. Check server IP in logs.');
+      showToast(e.message || 'Server connection issue.', 'error');
     } finally {
       setLoading(false);
       setStatusMessage(null);
@@ -60,7 +70,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
 
   const handleSendOtp = async () => {
     if (!email) {
-      Alert.alert('Error', 'Please enter your email.');
+      showToast('Please enter your email address', 'error');
       return;
     }
     setLoading(true);
@@ -73,13 +83,13 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
       
       const otpMsg = res.debugOtp
         ? `OTP Code: ${res.debugOtp}`
-        : res.message || `An OTP was sent to ${email}`;
+        : res.message || `OTP sent to ${email}`;
       
-      Alert.alert('OTP Status', `${otpMsg}\n\nCode ${codeToSet} filled automatically.`);
+      showToast(`OTP Sent! Code ${codeToSet} filled`, 'success');
     } catch (e: any) {
       setOtpSent(true);
       setOtp('123456');
-      Alert.alert('OTP Generated', 'Use test OTP code: 123456');
+      showToast('OTP Generated: Use test code 123456', 'info');
     } finally {
       setLoading(false);
       setStatusMessage(null);
@@ -88,7 +98,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
 
   const handleVerifyOtp = async () => {
     if (!otp) {
-      Alert.alert('Error', 'Please enter the 6-digit OTP code.');
+      showToast('Please enter the 6-digit OTP code', 'error');
       return;
     }
     setLoading(true);
@@ -104,12 +114,13 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
           isAuthenticated: true,
         };
         await saveUserSession(session);
+        showToast('Registration complete!', 'success');
         onLoginSuccess(session);
       } else {
-        Alert.alert('Verification Failed', res.message || 'Invalid OTP code.');
+        showToast(res.message || 'Invalid OTP code.', 'error');
       }
     } catch (e: any) {
-      Alert.alert('Verification Error', e.message || 'Failed to verify OTP.');
+      showToast(e.message || 'Failed to verify OTP.', 'error');
     } finally {
       setLoading(false);
       setStatusMessage(null);
@@ -118,6 +129,8 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
+      <Toast message={toastMsg} type={toastType} onHide={() => setToastMsg(null)} duration={2000} />
+
       <View style={styles.card}>
         <Text style={styles.logoTitle}>⚡ RESCUETRON MOBILE</Text>
         <Text style={styles.subTitle}>
@@ -250,64 +263,60 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#1e293b',
     padding: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
+    elevation: 5,
   },
   logoTitle: {
-    color: '#f43f5e',
     fontSize: 20,
     fontWeight: 'bold',
+    color: '#e11d48',
     textAlign: 'center',
-    letterSpacing: 1,
-    marginBottom: 4,
   },
   subTitle: {
-    color: '#94a3b8',
     fontSize: 12,
+    color: '#94a3b8',
     textAlign: 'center',
     marginBottom: 20,
+    marginTop: 4,
   },
   inputGroup: {
     marginBottom: 16,
   },
   label: {
-    color: '#cbd5e1',
     fontSize: 12,
     fontWeight: '600',
+    color: '#cbd5e1',
     marginBottom: 6,
   },
   input: {
-    backgroundColor: '#020617',
-    borderWidth: 1,
-    borderColor: '#334155',
-    borderRadius: 10,
+    backgroundColor: '#1e293b',
+    borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 12,
     color: '#f8fafc',
     fontSize: 14,
+    borderWidth: 1,
+    borderColor: '#334155',
   },
   otpInput: {
-    borderColor: '#f43f5e',
-    color: '#f43f5e',
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
-    letterSpacing: 4,
+    letterSpacing: 6,
     textAlign: 'center',
+    color: '#38bdf8',
+    borderColor: '#38bdf8',
   },
   statusBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 10,
     backgroundColor: 'rgba(56, 189, 248, 0.1)',
     padding: 10,
-    borderRadius: 8,
+    borderRadius: 10,
     marginBottom: 16,
   },
   statusText: {
     color: '#38bdf8',
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '500',
     flex: 1,
   },
@@ -322,7 +331,7 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontWeight: 'bold',
     fontSize: 14,
-    letterSpacing: 1,
+    letterSpacing: 0.5,
   },
   toggleModeBtn: {
     marginTop: 16,
@@ -332,21 +341,17 @@ const styles = StyleSheet.create({
     color: '#38bdf8',
     fontSize: 12,
     fontWeight: '600',
-    textDecorationLine: 'underline',
   },
   logsBtn: {
     marginTop: 20,
-    backgroundColor: '#1e293b',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 8,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#1e293b',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#334155',
   },
   logsBtnText: {
-    color: '#94a3b8',
+    color: '#64748b',
     fontSize: 11,
-    fontWeight: '600',
+    fontWeight: 'bold',
   },
 });
