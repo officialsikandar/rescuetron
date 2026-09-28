@@ -45,11 +45,11 @@
       "fullName": "Rahul Sharma",
       "id": "user_demo_101",
       "lastLocation": {
+        "address": "Lat 27.0616°, Lng 75.7656°",
         "latitude": 27.061647,
         "longitude": 75.765615,
-        "address": "Lat 27.0616°, Lng 75.7656°",
         "speed": 48,
-        "timestamp": "2026-09-28T12:01:40.840Z"
+        "timestamp": "2026-09-28T12:13:17.962Z"
       },
       "medicalConditions": "Mild Asthma",
       "medications": "Inhaler as needed",
@@ -61,7 +61,7 @@
   "test_connection": {
     "appName": "Rescuetron Emergency System",
     "databaseStatus": "LIVE_FIREBASE_CONNECTED",
-    "lastHeartbeat": "2026-09-28T12:01:30.912Z"
+    "lastHeartbeat": "2026-09-28T12:30:32.262Z"
   },
   "locations": {
     "user_demo_101": {
@@ -70,7 +70,7 @@
         "longitude": 75.765615,
         "address": "Lat 27.0616°, Lng 75.7656°",
         "speed": 48,
-        "timestamp": "2026-09-28T12:01:40.840Z"
+        "timestamp": "2026-09-28T12:13:17.962Z"
       }
     }
   },
