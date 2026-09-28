@@ -41,6 +41,15 @@ export async function sendViaHttpsApi(params: {
   )?.replace(/["']/g, "").trim();
 
   if (brevoApiKey) {
+    if (brevoApiKey.startsWith("xsmtpsib-")) {
+      console.warn(`⚠️ [Brevo Key Warning] You provided an SMTP Key ("${brevoApiKey.slice(0, 8)}...") instead of a v3 API Key. Brevo REST API requires an API Key starting with "xkeysib-".`);
+      return {
+        sent: false,
+        error: `Brevo Configuration Notice: Your BREVO_API_KEY starts with "xsmtpsib-", which is an SMTP password. Brevo's HTTPS API requires a v3 API Key starting with "xkeysib-". Please go to Brevo Dashboard -> SMTP & API -> API Keys tab and generate an API key.`,
+        provider: "Brevo HTTPS API",
+      };
+    }
+
     try {
       const senderEmail = (process.env.SMTP_USER || process.env.RESEND_FROM_EMAIL || "sikandaritguy@gmail.com").replace(/["'<>]|Rescuetron Emergency/gi, "").trim();
       const maskedKey = `${brevoApiKey.slice(0, 6)}...${brevoApiKey.slice(-4)}`;
