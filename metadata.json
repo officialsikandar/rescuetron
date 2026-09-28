@@ -1,0 +1,6 @@
+{
+  "name": "Rescuetron - Accident Detection & Emergency Alert System",
+  "description": "Smart mobile accident detection app with NestJS REST API, JWT & Email OTP auth, live location GPS tracking, impact sensor monitoring, emergency alert email & live tracker, and automatic call escalation.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

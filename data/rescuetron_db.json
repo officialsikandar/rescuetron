@@ -1,0 +1,276 @@
+{
+  "settings": {
+    "autoCallingEnabled": true,
+    "gForceSensitivity": 4.5,
+    "lastUpdated": "2026-09-28T06:22:06.610Z",
+    "soundAlertsEnabled": true,
+    "trackerWaitSeconds": 60
+  },
+  "users": {
+    "user_1790525210329": {
+      "age": 26,
+      "allergies": "Penicillin, Dust",
+      "bloodGroup": "O+",
+      "createdAt": "2026-09-27T16:06:50.329Z",
+      "email": "demo@yopmail.com",
+      "fullName": "SIKANDAR KHAN",
+      "id": "user_1790525210329",
+      "lastLocation": {
+        "address": "Lat 26.9914°, Lng 75.7434°",
+        "latitude": 26.991432537087626,
+        "longitude": 75.74338124586345,
+        "speed": 48,
+        "timestamp": "2026-09-28T08:14:38.854Z"
+      },
+      "medicalConditions": "Mild Asthma",
+      "medications": "Inhaler as needed",
+      "organDonor": true,
+      "passwordHash": "Test@123",
+      "phone": "+918005913597",
+      "settings": {
+        "autoCallingEnabled": true,
+        "gForceSensitivity": 4.5,
+        "lastUpdated": "2026-09-28T06:22:06.610Z",
+        "soundAlertsEnabled": true,
+        "trackerWaitSeconds": 60
+      },
+      "updatedAt": "2026-09-28T06:44:14.796Z"
+    },
+    "user_demo_101": {
+      "age": 26,
+      "allergies": "Penicillin, Dust",
+      "bloodGroup": "O+",
+      "createdAt": "2026-09-27T16:05:54.116Z",
+      "email": "demo@rescuetron.com",
+      "fullName": "Rahul Sharma",
+      "id": "user_demo_101",
+      "lastLocation": {
+        "latitude": 27.061647,
+        "longitude": 75.765615,
+        "address": "Lat 27.0616°, Lng 75.7656°",
+        "speed": 48,
+        "timestamp": "2026-09-28T11:56:37.941Z"
+      },
+      "medicalConditions": "Mild Asthma",
+      "medications": "Inhaler as needed",
+      "organDonor": true,
+      "passwordHash": "password123",
+      "phone": "+91 98765 43210"
+    }
+  },
+  "test_connection": {
+    "appName": "Rescuetron Emergency System",
+    "databaseStatus": "LIVE_FIREBASE_CONNECTED",
+    "lastHeartbeat": "2026-09-28T11:55:24.330Z"
+  },
+  "locations": {
+    "user_demo_101": {
+      "latest": {
+        "latitude": 27.061647,
+        "longitude": 75.765615,
+        "address": "Lat 27.0616°, Lng 75.7656°",
+        "speed": 48,
+        "timestamp": "2026-09-28T11:56:37.956Z"
+      }
+    }
+  },
+  "usersByEmail": {
+    "demo_yopmail_com": "user_1790525210329"
+  },
+  "contacts": {
+    "contact_1790577855873": {
+      "createdAt": "2026-09-28T06:44:15.873Z",
+      "email": "SIKANDARITGUY@GMAIL.COM",
+      "id": "contact_1790577855873",
+      "isPrimary": true,
+      "name": "Priya Sharma (Sister)",
+      "phone": "+91 98111 22233",
+      "relationship": "Primary Contact",
+      "userId": "user_1790525210329"
+    },
+    "contact_1790579002040": {
+      "createdAt": "2026-09-28T07:03:22.040Z",
+      "email": "SIKANDARITGUY@GMAIL.COM",
+      "id": "contact_1790579002040",
+      "isPrimary": true,
+      "name": "SIKANDAR KHAN",
+      "phone": "08005913597",
+      "relationship": "Family",
+      "userId": "user_demo_101"
+    }
+  },
+  "alerts": {
+    "alert_1790579341088": {
+      "id": "alert_1790579341088",
+      "userId": "user_1790525210329",
+      "userEmail": "demo@yopmail.com",
+      "userName": "SIKANDAR KHAN",
+      "timestamp": "2026-09-28T07:09:01.462Z",
+      "location": {
+        "latitude": 26.991429522657516,
+        "longitude": 75.74345231347415,
+        "accuracy": 98,
+        "speed": 48,
+        "address": "Lat 26.9914°, Lng 75.7435°",
+        "timestamp": "2026-09-28T07:07:59.304Z"
+      },
+      "sensorSnapshot": {
+        "accelX": 0,
+        "accelY": 0,
+        "accelZ": 9.81,
+        "totalG": 1,
+        "gyroAlpha": 14.2,
+        "gyroBeta": 2.1,
+        "gyroGamma": 0.8,
+        "impactDetected": false,
+        "timestamp": "2026-09-28T07:07:59.105Z"
+      },
+      "status": "ALERT_SENT",
+      "trackerId": "trk_66ph0we7",
+      "contactNotifiedEmail": "SIKANDARITGUY@GMAIL.COM",
+      "contactNotifiedPhone": "+91 98111 22233",
+      "emailOpened": false,
+      "emailOpenCount": 0,
+      "escalationTimerSeconds": 60
+    },
+    "alert_1790579458389": {
+      "contactNotifiedEmail": "SIKANDARITGUY@GMAIL.COM",
+      "contactNotifiedPhone": "+91 98111 22233",
+      "emailOpenCount": 0,
+      "emailOpened": false,
+      "escalationTimerSeconds": 60,
+      "id": "alert_1790579458389",
+      "location": {
+        "accuracy": 98,
+        "address": "Lat 26.9914°, Lng 75.7435°",
+        "latitude": 26.991429522657516,
+        "longitude": 75.74345231347415,
+        "speed": 48,
+        "timestamp": "2026-09-28T07:10:06.365Z"
+      },
+      "sensorSnapshot": {
+        "accelX": 0,
+        "accelY": 0,
+        "accelZ": 9.81,
+        "gyroAlpha": 14.2,
+        "gyroBeta": 2.1,
+        "gyroGamma": 0.8,
+        "impactDetected": false,
+        "timestamp": "2026-09-28T07:10:06.245Z",
+        "totalG": 1
+      },
+      "status": "ALERT_SENT",
+      "timestamp": "2026-09-28T07:10:58.753Z",
+      "trackerId": "trk_c0876tag",
+      "userEmail": "demo@yopmail.com",
+      "userId": "user_1790525210329",
+      "userName": "SIKANDAR KHAN"
+    },
+    "alert_1790579585621": {
+      "contactNotifiedEmail": "SIKANDARITGUY@GMAIL.COM",
+      "contactNotifiedPhone": "+91 98111 22233",
+      "emailOpenCount": 0,
+      "emailOpened": false,
+      "escalationTimerSeconds": 60,
+      "id": "alert_1790579585621",
+      "location": {
+        "accuracy": 99,
+        "address": "Lat 26.9914°, Lng 75.7434°",
+        "latitude": 26.991432537087626,
+        "longitude": 75.74338124586345,
+        "speed": 48,
+        "timestamp": "2026-09-28T07:11:56.374Z"
+      },
+      "sensorSnapshot": {
+        "accelX": 0,
+        "accelY": 0,
+        "accelZ": 9.81,
+        "gyroAlpha": 14.2,
+        "gyroBeta": 2.1,
+        "gyroGamma": 0.8,
+        "impactDetected": false,
+        "timestamp": "2026-09-28T07:11:56.127Z",
+        "totalG": 1
+      },
+      "status": "ALERT_SENT",
+      "timestamp": "2026-09-28T07:13:05.986Z",
+      "trackerId": "trk_rn3xg2fm",
+      "userEmail": "demo@yopmail.com",
+      "userId": "user_1790525210329",
+      "userName": "SIKANDAR KHAN"
+    },
+    "alert_1790580901521": {
+      "contactNotifiedEmail": "SIKANDARITGUY@GMAIL.COM",
+      "contactNotifiedPhone": "+91 98111 22233",
+      "emailOpenCount": 0,
+      "emailOpened": false,
+      "escalationTimerSeconds": 60,
+      "id": "alert_1790580901521",
+      "location": {
+        "accuracy": 99,
+        "address": "Lat 26.9914°, Lng 75.7434°",
+        "latitude": 26.991432537087626,
+        "longitude": 75.74338124586345,
+        "speed": 48,
+        "timestamp": "2026-09-28T07:11:56.374Z"
+      },
+      "sensorSnapshot": {
+        "accelX": 0,
+        "accelY": 0,
+        "accelZ": 9.81,
+        "gyroAlpha": 14.2,
+        "gyroBeta": 2.1,
+        "gyroGamma": 0.8,
+        "impactDetected": false,
+        "timestamp": "2026-09-28T07:34:59.095Z",
+        "totalG": 1
+      },
+      "status": "ALERT_SENT",
+      "timestamp": "2026-09-28T07:35:01.864Z",
+      "trackerId": "trk_jstd30i5",
+      "userEmail": "demo@yopmail.com",
+      "userId": "user_1790525210329",
+      "userName": "SIKANDAR KHAN"
+    },
+    "alert_1790596680884": {
+      "contactNotifiedEmail": "SIKANDARITGUY@GMAIL.COM",
+      "contactNotifiedPhone": "+91 98111 22233",
+      "emailOpenCount": 0,
+      "emailOpened": false,
+      "escalationTimerSeconds": 60,
+      "id": "alert_1790596680884",
+      "location": {
+        "accuracy": 78,
+        "address": "Lat 27.0616°, Lng 75.7656°",
+        "latitude": 27.061647,
+        "longitude": 75.765615,
+        "speed": 48,
+        "timestamp": "2026-09-28T11:56:37.769Z"
+      },
+      "sensorSnapshot": {
+        "accelX": 0,
+        "accelY": 0,
+        "accelZ": 9.81,
+        "gyroAlpha": 14.2,
+        "gyroBeta": 2.1,
+        "gyroGamma": 0.8,
+        "impactDetected": false,
+        "timestamp": "2026-09-28T11:57:37.605Z",
+        "totalG": 1
+      },
+      "status": "ALERT_SENT",
+      "timestamp": "2026-09-28T11:58:01.248Z",
+      "trackerId": "trk_ki30v60a",
+      "userEmail": "demo@yopmail.com",
+      "userId": "user_1790525210329",
+      "userName": "SIKANDAR KHAN"
+    }
+  },
+  "alertsByTracker": {
+    "trk_66ph0we7": "alert_1790579341088",
+    "trk_c0876tag": "alert_1790579458389",
+    "trk_rn3xg2fm": "alert_1790579585621",
+    "trk_jstd30i5": "alert_1790580901521",
+    "trk_ki30v60a": "alert_1790596680884"
+  }
+}
