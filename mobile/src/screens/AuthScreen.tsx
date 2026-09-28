@@ -7,6 +7,8 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   ScrollView,
+  Platform,
+  StatusBar,
 } from 'react-native';
 import { sendSignupOtp, verifyOtpAndSignup, loginUser, setAuthToken } from '../services/api';
 import { saveUserSession, StoredSession } from '../services/storage';
@@ -39,11 +41,16 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
   };
 
   const handleLogin = async () => {
-    const loginEmail = email.trim() || 'demo@rescuetron.com';
-    const loginPass = password || 'password123';
+    const loginEmail = email.trim();
+    const loginPass = password.trim() || 'password123';
+
+    if (!loginEmail) {
+      showToast('Please enter your email address', 'error');
+      return;
+    }
 
     setLoading(true);
-    setStatusMessage(`Connecting to ${getBaseUrl()}...`);
+    setStatusMessage(`Checking email "${loginEmail}" in database...`);
     try {
       const res = await loginUser(loginEmail, loginPass);
       if (res.success && res.user) {
@@ -58,10 +65,10 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
         showToast('Login successful!', 'success');
         onLoginSuccess(session);
       } else {
-        showToast(res.message || 'Invalid email or password.', 'error');
+        showToast(res.message || 'This email is not registered. Please register first.', 'error');
       }
     } catch (e: any) {
-      showToast(e.message || 'Server connection issue.', 'error');
+      showToast(e.message || 'This email is not registered. Please register first.', 'error');
     } finally {
       setLoading(false);
       setStatusMessage(null);
@@ -254,6 +261,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
+    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 28) + 20 : 30,
+    paddingBottom: Platform.OS === 'android' ? 36 : 24,
   },
   card: {
     width: '100%',

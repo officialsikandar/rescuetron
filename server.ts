@@ -664,6 +664,13 @@ app.post("/api/auth/login", async (req, res) => {
   const { email, password } = req.body;
   const cleanEmail = email?.trim().toLowerCase();
 
+  if (!cleanEmail) {
+    return res.status(400).json({
+      success: false,
+      message: "Email is required.",
+    });
+  }
+
   let userId = await dbGet<string>(`usersByEmail/${sanitizeEmailKey(cleanEmail)}`);
   let user: StoredUser | null = null;
 
@@ -671,25 +678,19 @@ app.post("/api/auth/login", async (req, res) => {
     user = await dbGet<StoredUser>(`users/${userId}`);
   }
 
-  // Auto-create in Firebase if user signs in
   if (!user) {
-    const newUserId = `user_${Date.now()}`;
-    user = {
-      id: newUserId,
-      email: cleanEmail,
-      passwordHash: password || "password123",
-      fullName: "User",
-      age: 25,
-      phone: "+91 98765 43210",
-      bloodGroup: "O+",
-      allergies: "None",
-      medicalConditions: "None",
-      medications: "None",
-      organDonor: true,
-      createdAt: new Date().toISOString(),
-    };
-    await dbSet(`users/${user.id}`, user);
-    await dbSet(`usersByEmail/${sanitizeEmailKey(cleanEmail)}`, user.id);
+    const allUsers = (await dbGet<Record<string, StoredUser>>("users")) || {};
+    user = Object.values(allUsers).find((u) => u.email.toLowerCase() === cleanEmail) || null;
+  }
+
+  // Reject login if user is not registered in DB
+  if (!user) {
+    console.log(`❌ [Auth Login] Login rejected: Email "${cleanEmail}" is not registered in DB.`);
+    return res.status(400).json({
+      success: false,
+      registered: false,
+      message: "This email is not registered. Please register first.",
+    });
   }
 
   const token = generateMockJwtToken(user.id, user.email);

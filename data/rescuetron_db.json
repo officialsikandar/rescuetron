@@ -2,7 +2,7 @@
   "settings": {
     "autoCallingEnabled": true,
     "gForceSensitivity": 4.5,
-    "lastUpdated": "2026-09-28T14:31:10.666Z",
+    "lastUpdated": "2026-09-28T15:02:45.177Z",
     "soundAlertsEnabled": true,
     "trackerWaitSeconds": 30
   },
@@ -10,7 +10,7 @@
     "user_1790525210329": {
       "age": 26,
       "allergies": "Penicillin, Dust",
-      "bloodGroup": "O+",
+      "bloodGroup": "A+",
       "createdAt": "2026-09-27T16:06:50.329Z",
       "email": "demo@yopmail.com",
       "fullName": "SIKANDAR KHAN",
@@ -30,11 +30,11 @@
       "settings": {
         "autoCallingEnabled": true,
         "gForceSensitivity": 4.5,
-        "lastUpdated": "2026-09-28T06:22:06.610Z",
+        "lastUpdated": "2026-09-28T14:31:10.666Z",
         "soundAlertsEnabled": true,
-        "trackerWaitSeconds": 60
+        "trackerWaitSeconds": 30
       },
-      "updatedAt": "2026-09-28T06:44:14.796Z"
+      "updatedAt": "2026-09-28T14:31:42.080Z"
     },
     "user_demo_101": {
       "age": 26,
@@ -45,11 +45,11 @@
       "fullName": "Rahul Sharma",
       "id": "user_demo_101",
       "lastLocation": {
-        "address": "Lat 27.0617°, Lng 75.7658°",
-        "latitude": 27.061660140917063,
-        "longitude": 75.76576483282268,
+        "address": "Lat 27.0613°, Lng 75.7653°",
+        "latitude": 27.061346359337783,
+        "longitude": 75.76529720883622,
         "speed": 48,
-        "timestamp": "2026-09-28T13:59:16.489Z"
+        "timestamp": "2026-09-28T14:41:47.210Z"
       },
       "medicalConditions": "Mild Asthma",
       "medications": "Inhaler as needed",
@@ -61,16 +61,16 @@
   "test_connection": {
     "appName": "Rescuetron Emergency System",
     "databaseStatus": "LIVE_FIREBASE_CONNECTED",
-    "lastHeartbeat": "2026-09-28T13:59:10.151Z"
+    "lastHeartbeat": "2026-09-28T14:41:39.909Z"
   },
   "locations": {
     "user_demo_101": {
       "latest": {
-        "latitude": 27.061660140917063,
-        "longitude": 75.76576483282268,
-        "address": "Lat 27.0617°, Lng 75.7658°",
+        "latitude": 27.061346359337783,
+        "longitude": 75.76529720883622,
+        "address": "Lat 27.0613°, Lng 75.7653°",
         "speed": 48,
-        "timestamp": "2026-09-28T13:59:16.494Z"
+        "timestamp": "2026-09-28T14:41:47.210Z"
       }
     }
   },

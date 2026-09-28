@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  Platform,
 } from 'react-native';
 import { HomeScreen } from './src/screens/HomeScreen';
 import { MedicalProfileScreen } from './src/screens/MedicalProfileScreen';
@@ -213,6 +214,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#020617',
+    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 28) : 0,
   },
   center: {
     justifyContent: 'center',
@@ -226,7 +228,8 @@ const styles = StyleSheet.create({
   appBar: {
     backgroundColor: '#0f172a',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingTop: Platform.OS === 'android' ? 10 : 12,
+    paddingBottom: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#1e293b',
     flexDirection: 'row',
@@ -303,8 +306,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#0f172a',
     borderTopWidth: 1,
     borderTopColor: '#1e293b',
-    paddingVertical: 8,
-    paddingBottom: 16,
+    paddingTop: 8,
+    paddingBottom: Platform.OS === 'android' ? 28 : 22,
   },
   tabItem: {
     flex: 1,

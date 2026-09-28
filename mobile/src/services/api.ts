@@ -142,32 +142,30 @@ export const loginUser = async (email: string, password: string) => {
   try {
     const res = await api.post('/auth/login', { email, password });
     
-    if (isHtmlResponse(res.data) || !res.data || !res.data.success) {
-      addLog('API_RES', `HTML/Cookie challenge returned. Logging in with session account for ${email}...`);
+    if (res.data && res.data.success === false) {
       return {
-        success: true,
-        user: {
-          id: 'usr_' + Date.now(),
-          email: email.trim() || 'demo@rescuetron.com',
-          name: (email.split('@')[0] || 'Demo User'),
-          role: 'USER',
-        },
-        token: 'jwt_token_' + Date.now(),
+        success: false,
+        registered: false,
+        message: res.data.message || 'This email is not registered. Please register first.',
+      };
+    }
+    
+    if (isHtmlResponse(res.data) || !res.data) {
+      addLog('API_RES', `Dev proxy HTML challenge received.`);
+      return {
+        success: false,
+        message: 'This email is not registered. Please register first.',
       };
     }
     
     return res.data;
   } catch (e: any) {
-    // Fallback Login for Offline/Dev Proxy environments
+    const errMsg = e.response?.data?.message || e.message || 'This email is not registered. Please register first.';
+    addLog('API_ERR', `Login error: ${errMsg}`);
     return {
-      success: true,
-      user: {
-        id: 'usr_' + Date.now(),
-        email: email.trim() || 'demo@rescuetron.com',
-        name: (email.split('@')[0] || 'Demo User'),
-        role: 'USER',
-      },
-      token: 'jwt_token_' + Date.now(),
+      success: false,
+      registered: false,
+      message: errMsg.includes('registered') ? errMsg : 'This email is not registered. Please register first.',
     };
   }
 };
