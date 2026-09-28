@@ -274,6 +274,18 @@ export async function dbSet(nodePath: string, data: any): Promise<boolean> {
           { upsert: true }
         );
       }
+
+      // Keep top-level parent node (e.g. "alerts", "contacts", "users") synchronized in MongoDB
+      const parts = cleanPath.split("/").filter(Boolean);
+      if (parts.length > 1) {
+        const rootKey = parts[0];
+        const rootData = localDbCache[rootKey] ?? {};
+        await mongoDb.collection("store").updateOne(
+          { _id: rootKey as any },
+          { $set: { data: rootData, updatedAt: new Date() } },
+          { upsert: true }
+        );
+      }
     } catch (err) {
       // quiet
     }
@@ -1311,19 +1323,83 @@ app.post("/api/alert/escalate-call", async (req, res) => {
   });
 });
 
-app.get(["/api/alert/history/:userId", "/api/alert/history", "/api/alerts/history"], async (req, res) => {
-  const userId = req.params.userId || (req.query.userId as string | undefined);
-  const allAlertsObj = (await dbGet<Record<string, StoredAlert>>("alerts")) || {};
-  let history = Object.values(allAlertsObj).sort(
-    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-  );
+// Helper: Resolve logged-in user's ID and Email from param, query, or Authorization Bearer token
+async function resolveUserIdentity(req: express.Request, rawId?: string): Promise<{ userId: string | null; email: string | null }> {
+  let candidateId = rawId?.trim() || "";
+  let candidateEmail = "";
 
-  if (userId && userId !== "demo") {
-    const userAlerts = history.filter((a) => a.userId === userId);
-    if (userAlerts.length > 0) {
-      history = userAlerts;
+  // Extract from Authorization Bearer JWT if available
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    const token = authHeader.slice(7).trim();
+    const parts = token.split(".");
+    if (parts.length === 3) {
+      try {
+        const payload = JSON.parse(Buffer.from(parts[1], "base64url").toString("utf-8"));
+        if (!candidateId || candidateId === "demo") {
+          if (payload.sub) candidateId = String(payload.sub);
+        }
+        if (payload.email) candidateEmail = String(payload.email).toLowerCase();
+      } catch (_e) {
+        // ignore malformed token
+      }
     }
   }
+
+  if (candidateId.includes("@")) {
+    candidateEmail = candidateId.toLowerCase();
+  }
+
+  let resolvedUser: StoredUser | null = null;
+
+  if (candidateId && candidateId !== "demo") {
+    resolvedUser = await dbGet<StoredUser>(`users/${candidateId}`);
+  }
+
+  if (!resolvedUser && candidateEmail) {
+    const mappedId = await dbGet<string>(`usersByEmail/${sanitizeEmailKey(candidateEmail)}`);
+    if (mappedId) {
+      resolvedUser = await dbGet<StoredUser>(`users/${mappedId}`);
+    }
+  }
+
+  if (!resolvedUser && (candidateId || candidateEmail)) {
+    const allUsers = (await dbGet<Record<string, StoredUser>>("users")) || {};
+    resolvedUser =
+      Object.values(allUsers).find(
+        (u) =>
+          (candidateId && u.id === candidateId) ||
+          (candidateEmail && u.email?.toLowerCase() === candidateEmail)
+      ) || null;
+  }
+
+  return {
+    userId: resolvedUser?.id || (candidateId && candidateId !== "demo" ? candidateId : null),
+    email: resolvedUser?.email?.toLowerCase() || (candidateEmail || null),
+  };
+}
+
+app.get(["/api/alert/history/:userId", "/api/alert/history", "/api/alerts/history"], async (req, res) => {
+  const rawUserId = req.params.userId || (req.query.userId as string | undefined);
+  const { userId: resolvedUserId, email: resolvedEmail } = await resolveUserIdentity(req, rawUserId);
+
+  // If no logged-in user identity can be determined, return empty list
+  if (!resolvedUserId && !resolvedEmail) {
+    return res.json({ success: true, alerts: [] });
+  }
+
+  const allAlertsObj = (await dbGet<Record<string, StoredAlert>>("alerts")) || {};
+  const history = Object.values(allAlertsObj)
+    .filter((a) => {
+      if (!a || typeof a !== "object") return false;
+      const matchesId =
+        (resolvedUserId && a.userId === resolvedUserId) ||
+        (rawUserId && rawUserId !== "demo" && a.userId === rawUserId);
+      const matchesEmail =
+        resolvedEmail && a.userEmail && a.userEmail.toLowerCase() === resolvedEmail;
+      return Boolean(matchesId || matchesEmail);
+    })
+    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
   return res.json({ success: true, alerts: history });
 });
@@ -1350,11 +1426,21 @@ app.delete(["/api/alert/:alertId", "/api/alerts/:alertId"], async (req, res) => 
 
 // Clear all alert history for user
 app.delete(["/api/alert/history/clear/:userId", "/api/alerts/history/clear/:userId", "/api/alert/history/clear"], async (req, res) => {
-  const userId = req.params.userId || (req.query.userId as string | undefined);
+  const rawUserId = req.params.userId || (req.query.userId as string | undefined);
+  const { userId: resolvedUserId, email: resolvedEmail } = await resolveUserIdentity(req, rawUserId);
   const allAlertsObj = (await dbGet<Record<string, StoredAlert>>("alerts")) || {};
 
   for (const [id, alert] of Object.entries(allAlertsObj)) {
-    if (!userId || userId === "all" || userId === "demo" || alert.userId === userId) {
+    if (!alert || typeof alert !== "object") continue;
+    const isMatch =
+      !rawUserId ||
+      rawUserId === "all" ||
+      rawUserId === "demo" ||
+      (resolvedUserId && alert.userId === resolvedUserId) ||
+      alert.userId === rawUserId ||
+      (resolvedEmail && alert.userEmail?.toLowerCase() === resolvedEmail);
+
+    if (isMatch) {
       if (alert.trackerId) {
         await dbSet(`alertsByTracker/${alert.trackerId}`, null);
       }
@@ -1362,8 +1448,8 @@ app.delete(["/api/alert/history/clear/:userId", "/api/alerts/history/clear/:user
     }
   }
 
-  broadcastWs({ type: "ALERT_HISTORY_CLEARED", userId });
-  console.log(`🗑️ [Firebase RTDB] Cleared alert history for user ${userId || "all"}`);
+  broadcastWs({ type: "ALERT_HISTORY_CLEARED", userId: resolvedUserId || rawUserId });
+  console.log(`🗑️ [Firebase RTDB] Cleared alert history for user ${resolvedUserId || rawUserId || "all"}`);
 
   return res.json({
     success: true,
