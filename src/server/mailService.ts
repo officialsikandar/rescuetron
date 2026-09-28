@@ -423,9 +423,10 @@ export async function sendOtpEmail(toEmail: string, otpCode: string, type: "sign
       responseCode: error.responseCode,
       stack: error.stack,
     });
+    const combinedError = httpsResult?.error ? `${httpsResult.error}` : `Gmail SMTP Error: ${error.message || error}`;
     return {
       sent: false,
-      message: `Failed to deliver email via Gmail SMTP: ${error.message || error}`,
+      message: combinedError,
       error: error.message || String(error),
     };
   }
