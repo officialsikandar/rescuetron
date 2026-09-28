@@ -9,6 +9,9 @@ import {
   ScrollView,
   Platform,
   StatusBar,
+  KeyboardAvoidingView,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from 'react-native';
 import { sendSignupOtp, verifyOtpAndSignup, loginUser, setAuthToken } from '../services/api';
 import { saveUserSession, StoredSession } from '../services/storage';
@@ -135,122 +138,132 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Toast message={toastMsg} type={toastType} onHide={() => setToastMsg(null)} duration={2000} />
+    <KeyboardAvoidingView
+      style={{ flex: 1, backgroundColor: '#020617' }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 0}>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <ScrollView
+          contentContainerStyle={styles.container}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}>
+          <Toast message={toastMsg} type={toastType} onHide={() => setToastMsg(null)} duration={2000} />
 
-      <View style={styles.card}>
-        <Text style={styles.logoTitle}>⚡ RESCUETRON MOBILE</Text>
-        <Text style={styles.subTitle}>
-          {isSignup ? 'Create Account & Verify OTP' : 'Secure Emergency Dispatch Login'}
-        </Text>
+          <View style={styles.card}>
+            <Text style={styles.logoTitle}>⚡ RESCUETRON MOBILE</Text>
+            <Text style={styles.subTitle}>
+              {isSignup ? 'Create Account & Verify OTP' : 'Secure Emergency Dispatch Login'}
+            </Text>
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Email Address</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="user@example.com"
-            placeholderTextColor="#64748b"
-            keyboardType="email-address"
-            autoCapitalize="none"
-            value={email}
-            onChangeText={setEmail}
-          />
-        </View>
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Email Address</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="user@example.com"
+                placeholderTextColor="#64748b"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                value={email}
+                onChangeText={setEmail}
+              />
+            </View>
 
-        {!isSignup ? (
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Password</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="••••••••"
-              placeholderTextColor="#64748b"
-              secureTextEntry
-              value={password}
-              onChangeText={setPassword}
-            />
-          </View>
-        ) : (
-          <>
-            {otpSent && (
+            {!isSignup ? (
               <View style={styles.inputGroup}>
-                <Text style={styles.label}>Enter 6-Digit OTP Code</Text>
+                <Text style={styles.label}>Password</Text>
                 <TextInput
-                  style={[styles.input, styles.otpInput]}
-                  placeholder="123456"
+                  style={styles.input}
+                  placeholder="••••••••"
                   placeholderTextColor="#64748b"
-                  keyboardType="number-pad"
-                  maxLength={6}
-                  value={otp}
-                  onChangeText={setOtp}
+                  secureTextEntry
+                  value={password}
+                  onChangeText={setPassword}
                 />
               </View>
+            ) : (
+              <>
+                {otpSent && (
+                  <View style={styles.inputGroup}>
+                    <Text style={styles.label}>Enter 6-Digit OTP Code</Text>
+                    <TextInput
+                      style={[styles.input, styles.otpInput]}
+                      placeholder="123456"
+                      placeholderTextColor="#64748b"
+                      keyboardType="number-pad"
+                      maxLength={6}
+                      value={otp}
+                      onChangeText={setOtp}
+                    />
+                  </View>
+                )}
+              </>
             )}
-          </>
-        )}
 
-        {statusMessage && (
-          <View style={styles.statusBox}>
-            <ActivityIndicator size="small" color="#38bdf8" />
-            <Text style={styles.statusText}>{statusMessage}</Text>
+            {statusMessage && (
+              <View style={styles.statusBox}>
+                <ActivityIndicator size="small" color="#38bdf8" />
+                <Text style={styles.statusText}>{statusMessage}</Text>
+              </View>
+            )}
+
+            {!isSignup ? (
+              <TouchableOpacity
+                style={styles.primaryButton}
+                onPress={handleLogin}
+                disabled={loading}>
+                <Text style={styles.primaryButtonText}>
+                  {loading ? 'Logging In...' : 'LOG IN'}
+                </Text>
+              </TouchableOpacity>
+            ) : !otpSent ? (
+              <TouchableOpacity
+                style={styles.primaryButton}
+                onPress={handleSendOtp}
+                disabled={loading}>
+                <Text style={styles.primaryButtonText}>
+                  {loading ? 'Sending OTP...' : 'SEND OTP CODE'}
+                </Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                style={styles.primaryButton}
+                onPress={handleVerifyOtp}
+                disabled={loading}>
+                <Text style={styles.primaryButtonText}>
+                  {loading ? 'Verifying...' : 'VERIFY & REGISTER'}
+                </Text>
+              </TouchableOpacity>
+            )}
+
+            <TouchableOpacity
+              style={styles.toggleModeBtn}
+              onPress={() => {
+                setIsSignup(!isSignup);
+                setOtpSent(false);
+                setOtp('');
+              }}>
+              <Text style={styles.toggleModeText}>
+                {isSignup
+                  ? 'Already have an account? Log In'
+                  : "Don't have an account? Sign Up with OTP"}
+              </Text>
+            </TouchableOpacity>
+
+            {/* Network & Logs Button */}
+            <TouchableOpacity
+              style={styles.logsBtn}
+              onPress={() => setShowLogsModal(true)}>
+              <Text style={styles.logsBtnText}>📋 Mobile Network & Server Logs</Text>
+            </TouchableOpacity>
           </View>
-        )}
 
-        {!isSignup ? (
-          <TouchableOpacity
-            style={styles.primaryButton}
-            onPress={handleLogin}
-            disabled={loading}>
-            <Text style={styles.primaryButtonText}>
-              {loading ? 'Logging In...' : 'LOG IN'}
-            </Text>
-          </TouchableOpacity>
-        ) : !otpSent ? (
-          <TouchableOpacity
-            style={styles.primaryButton}
-            onPress={handleSendOtp}
-            disabled={loading}>
-            <Text style={styles.primaryButtonText}>
-              {loading ? 'Sending OTP...' : 'SEND OTP CODE'}
-            </Text>
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity
-            style={styles.primaryButton}
-            onPress={handleVerifyOtp}
-            disabled={loading}>
-            <Text style={styles.primaryButtonText}>
-              {loading ? 'Verifying...' : 'VERIFY & REGISTER'}
-            </Text>
-          </TouchableOpacity>
-        )}
-
-        <TouchableOpacity
-          style={styles.toggleModeBtn}
-          onPress={() => {
-            setIsSignup(!isSignup);
-            setOtpSent(false);
-            setOtp('');
-          }}>
-          <Text style={styles.toggleModeText}>
-            {isSignup
-              ? 'Already have an account? Log In'
-              : "Don't have an account? Sign Up with OTP"}
-          </Text>
-        </TouchableOpacity>
-
-        {/* Network & Logs Button */}
-        <TouchableOpacity
-          style={styles.logsBtn}
-          onPress={() => setShowLogsModal(true)}>
-          <Text style={styles.logsBtnText}>📋 Mobile Network & Server Logs</Text>
-        </TouchableOpacity>
-      </View>
-
-      <NetworkLogsModal
-        visible={showLogsModal}
-        onClose={() => setShowLogsModal(false)}
-      />
-    </ScrollView>
+          <NetworkLogsModal
+            visible={showLogsModal}
+            onClose={() => setShowLogsModal(false)}
+          />
+        </ScrollView>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 };
 

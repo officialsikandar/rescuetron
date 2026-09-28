@@ -8,6 +8,10 @@ import {
   ScrollView,
   Switch,
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Keyboard,
+  TouchableWithoutFeedback,
+  Platform,
 } from 'react-native';
 import { UserProfile } from '../types';
 import { updateUserProfile, getAppSettings, saveAppSettings } from '../services/api';
@@ -122,10 +126,18 @@ export const MedicalProfileScreen: React.FC<MedicalProfileScreenProps> = ({
   };
 
   return (
-    <View style={styles.container}>
-      <Toast message={toastMsg} type={toastType} onHide={() => setToastMsg(null)} duration={2000} />
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={{ flex: 1 }}>
+          <Toast message={toastMsg} type={toastType} onHide={() => setToastMsg(null)} duration={2000} />
 
-      <ScrollView contentContainerStyle={styles.content}>
+          <ScrollView
+            contentContainerStyle={styles.content}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}>
         <Text style={styles.title}>Medical Emergency ID</Text>
         <Text style={styles.subtitle}>
           This profile will be shared with First Responders & Emergency Contacts upon crash detection.
@@ -276,7 +288,9 @@ export const MedicalProfileScreen: React.FC<MedicalProfileScreenProps> = ({
           )}
         </TouchableOpacity>
       </ScrollView>
-    </View>
+        </View>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 };
 

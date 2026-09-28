@@ -9,6 +9,10 @@ import {
   Switch,
   ActivityIndicator,
   Linking,
+  KeyboardAvoidingView,
+  TouchableWithoutFeedback,
+  Keyboard,
+  Platform,
 } from 'react-native';
 import { EmergencyContact } from '../types';
 import { saveEmergencyContact, fetchEmergencyContacts, deleteEmergencyContact } from '../services/api';
@@ -182,10 +186,18 @@ export const ContactsScreen: React.FC<ContactsScreenProps> = ({ userId }) => {
   };
 
   return (
-    <View style={styles.container}>
-      <Toast message={toastMsg} type={toastType} onHide={() => setToastMsg(null)} duration={2000} />
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={{ flex: 1 }}>
+          <Toast message={toastMsg} type={toastType} onHide={() => setToastMsg(null)} duration={2000} />
 
-      <ScrollView contentContainerStyle={styles.content}>
+          <ScrollView
+            contentContainerStyle={styles.content}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}>
         <Text style={styles.title}>Emergency Contacts</Text>
         <Text style={styles.subtitle}>
           When an accident is detected, Rescuetron will instantly dispatch SMS, Email, and GPS tracking links to these contacts.
@@ -323,7 +335,9 @@ export const ContactsScreen: React.FC<ContactsScreenProps> = ({ userId }) => {
           </View>
         )}
       </ScrollView>
-    </View>
+        </View>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 };
 

@@ -7,6 +7,10 @@ import {
   ScrollView,
   TextInput,
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Keyboard,
+  TouchableWithoutFeedback,
+  Platform,
 } from 'react-native';
 import { Accelerometer } from 'expo-sensors';
 import * as Location from 'expo-location';
@@ -295,13 +299,19 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ authState, onAlertTrigge
   const isEscalated = elapsedSeconds > customWaitSeconds && !isOpened;
 
   return (
-    <View style={styles.outerContainer}>
-      <Toast message={toastMsg} type={toastType} onHide={() => setToastMsg(null)} duration={2000} />
+    <KeyboardAvoidingView
+      style={styles.outerContainer}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={{ flex: 1 }}>
+          <Toast message={toastMsg} type={toastType} onHide={() => setToastMsg(null)} duration={2000} />
 
-      <ScrollView
-        style={styles.scrollContainer}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}>
+          <ScrollView
+            style={styles.scrollContainer}
+            contentContainerStyle={styles.scrollContent}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <Text style={styles.title}>Rescuetron Sensor Monitor</Text>
           <Text style={styles.subtitle}>Real-time Impact & GPS Tracking</Text>
@@ -470,7 +480,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ authState, onAlertTrigge
           </View>
         )}
       </ScrollView>
-    </View>
+        </View>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 };
 
