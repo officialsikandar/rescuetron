@@ -49,7 +49,7 @@
         "latitude": 27.061647,
         "longitude": 75.765615,
         "speed": 48,
-        "timestamp": "2026-09-28T13:39:26.780Z"
+        "timestamp": "2026-09-28T13:41:48.191Z"
       },
       "medicalConditions": "Mild Asthma",
       "medications": "Inhaler as needed",
@@ -61,7 +61,7 @@
   "test_connection": {
     "appName": "Rescuetron Emergency System",
     "databaseStatus": "LIVE_FIREBASE_CONNECTED",
-    "lastHeartbeat": "2026-09-28T13:39:20.962Z"
+    "lastHeartbeat": "2026-09-28T13:41:43.440Z"
   },
   "locations": {
     "user_demo_101": {
@@ -70,7 +70,7 @@
         "longitude": 75.765615,
         "address": "Lat 27.0616°, Lng 75.7656°",
         "speed": 48,
-        "timestamp": "2026-09-28T13:39:26.780Z"
+        "timestamp": "2026-09-28T13:41:48.191Z"
       }
     }
   },
