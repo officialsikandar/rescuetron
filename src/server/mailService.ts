@@ -74,7 +74,11 @@ export async function sendViaHttpsApi(params: {
           message: errorDetail,
           rawResponse: data,
         });
-        // If Brevo fails, keep error and fall through to Resend/SendGrid
+        return {
+          sent: false,
+          error: `Brevo API Error (HTTP ${res.status}): ${errorDetail}. Note: Ensure you are using a Brevo v3 API Key (starts with xkeysib-...) from Brevo Dashboard -> SMTP & API -> API Keys tab.`,
+          provider: "Brevo HTTPS API",
+        };
       }
     } catch (err: any) {
       console.error(`❌ [HTTPS Email Gateway EXCEPTION] Brevo request failed:`, err.message);
