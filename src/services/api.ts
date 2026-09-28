@@ -126,6 +126,20 @@ export async function getAlertHistory(userId: string): Promise<{ success: boolea
   return parseJsonResponse(res);
 }
 
+export async function deleteAlertRecord(alertId: string): Promise<{ success: boolean; message: string }> {
+  const res = await fetch(`${API_BASE}/alert/${encodeURIComponent(alertId)}`, {
+    method: 'DELETE',
+  });
+  return parseJsonResponse(res);
+}
+
+export async function clearAlertHistory(userId: string): Promise<{ success: boolean; message: string }> {
+  const res = await fetch(`${API_BASE}/alert/history/clear/${encodeURIComponent(userId)}`, {
+    method: 'DELETE',
+  });
+  return parseJsonResponse(res);
+}
+
 export async function getAlertStatus(alertId: string): Promise<{ success: boolean; alert: AlertRecord }> {
   const res = await fetch(`${API_BASE}/alert/status/${encodeURIComponent(alertId)}`);
   return parseJsonResponse(res);

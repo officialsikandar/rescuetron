@@ -8,9 +8,16 @@ import {
   Linking,
   ActivityIndicator,
   RefreshControl,
+  Alert,
 } from 'react-native';
 import { EmergencyAlert } from '../types';
-import { getAlertHistory, simulateEmailOpen, triggerAutoCallEscalation } from '../services/api';
+import {
+  getAlertHistory,
+  simulateEmailOpen,
+  triggerAutoCallEscalation,
+  deleteAlertRecord,
+  clearAlertHistory,
+} from '../services/api';
 import { Toast } from '../components/Toast';
 
 interface AlertHistoryScreenProps {
@@ -25,18 +32,19 @@ export const AlertHistoryScreen: React.FC<AlertHistoryScreenProps> = ({ userId }
       timestamp: new Date(Date.now() - 3600000).toISOString(),
       status: 'DISPATCHED',
       location: {
-        latitude: 37.7749,
-        longitude: -122.4194,
-        address: 'San Francisco, CA 94103, USA',
+        latitude: 28.6139,
+        longitude: 77.2090,
+        address: 'Connaught Place, New Delhi, India',
       },
       sensorSnapshot: {
         totalG: 4.82,
         speedKmh: 68.5,
       },
       trackerId: 'trk_99201',
-      trackerUrl: 'http://localhost:3000/?tracker=trk_99201',
+      trackerUrl: 'https://rescuetron.onrender.com/?tracker=trk_99201',
       emailOpened: false,
       contactNotifiedEmail: 'emergency.contact@gmail.com',
+      contactNotifiedPhone: '+91 98111 22233',
     },
   ]);
 
@@ -96,6 +104,41 @@ export const AlertHistoryScreen: React.FC<AlertHistoryScreenProps> = ({ userId }
     }
   };
 
+  const handleDeleteSingleAlert = async (alertId: string) => {
+    try {
+      await deleteAlertRecord(alertId);
+      setAlerts((prev) => prev.filter((a) => a.id !== alertId));
+      showToast('Incident record deleted', 'success');
+    } catch (e) {
+      setAlerts((prev) => prev.filter((a) => a.id !== alertId));
+      showToast('Incident removed', 'info');
+    }
+  };
+
+  const handleClearAllHistory = async () => {
+    Alert.alert(
+      'Clear All Incident History',
+      'Are you sure you want to permanently delete all emergency incident logs?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Clear All',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await clearAlertHistory(userId);
+              setAlerts([]);
+              showToast('All incident history cleared!', 'success');
+            } catch (e) {
+              setAlerts([]);
+              showToast('History cleared', 'info');
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const openMap = (lat: number, lng: number) => {
     const url = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
     Linking.openURL(url);
@@ -139,10 +182,19 @@ export const AlertHistoryScreen: React.FC<AlertHistoryScreenProps> = ({ userId }
             tintColor="#38bdf8"
           />
         }>
-        <Text style={styles.title}>Emergency Incident Log</Text>
-        <Text style={styles.subtitle}>
-          Real-time email open tracking, crash telemetry, and live GPS tracking dispatches.
-        </Text>
+        <View style={styles.headerRow}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.title}>Emergency Incident Log</Text>
+            <Text style={styles.subtitle}>
+              Real-time email open tracking & GPS dispatches.
+            </Text>
+          </View>
+          {alerts.length > 0 && (
+            <TouchableOpacity style={styles.clearAllBtn} onPress={handleClearAllHistory}>
+              <Text style={styles.clearAllBtnText}>Clear All 🗑️</Text>
+            </TouchableOpacity>
+          )}
+        </View>
 
         {loading && alerts.length === 0 ? (
           <ActivityIndicator color="#38bdf8" style={{ marginTop: 20 }} />
@@ -163,26 +215,44 @@ export const AlertHistoryScreen: React.FC<AlertHistoryScreenProps> = ({ userId }
                     {new Date(alert.timestamp).toLocaleString()}
                   </Text>
                 </View>
-                <View
-                  style={[
-                    styles.statusBadge,
-                    {
-                      backgroundColor: `${getStatusColor(alert.status, alert.emailOpened)}20`,
-                      borderColor: getStatusColor(alert.status, alert.emailOpened),
-                    },
-                  ]}>
-                  <Text
+                <View style={styles.headerBadgeGroup}>
+                  <View
                     style={[
-                      styles.statusText,
-                      { color: getStatusColor(alert.status, alert.emailOpened) },
+                      styles.statusBadge,
+                      {
+                        backgroundColor: `${getStatusColor(alert.status, alert.emailOpened)}20`,
+                        borderColor: getStatusColor(alert.status, alert.emailOpened),
+                      },
                     ]}>
-                    {alert.status === 'ESCALATED_CALL'
-                      ? '📞 CALL ESCALATED'
-                      : alert.emailOpened
-                      ? 'EMAIL OPENED'
-                      : 'UNOPENED'}
-                  </Text>
+                    <Text
+                      style={[
+                        styles.statusText,
+                        { color: getStatusColor(alert.status, alert.emailOpened) },
+                      ]}>
+                      {alert.status === 'ESCALATED_CALL'
+                        ? '📞 CALL ESCALATED'
+                        : alert.emailOpened
+                        ? 'EMAIL OPENED'
+                        : 'UNOPENED'}
+                    </Text>
+                  </View>
+                  <TouchableOpacity
+                    style={styles.deleteSingleBtn}
+                    onPress={() => handleDeleteSingleAlert(alert.id)}>
+                    <Text style={styles.deleteSingleBtnText}>🗑️</Text>
+                  </TouchableOpacity>
                 </View>
+              </View>
+
+              {/* Notified Contact Email Display */}
+              <View style={styles.recipientInfoBox}>
+                <Text style={styles.recipientLabel}>✉️ Alert Sent To (Primary Contact):</Text>
+                <Text style={styles.recipientEmail}>
+                  {alert.contactNotifiedEmail || 'Primary Emergency Contact in DB'}
+                </Text>
+                {alert.contactNotifiedPhone && (
+                  <Text style={styles.recipientPhone}>📞 {alert.contactNotifiedPhone}</Text>
+                )}
               </View>
 
               {/* Email Open Tracker Indicator */}
@@ -244,8 +314,8 @@ export const AlertHistoryScreen: React.FC<AlertHistoryScreenProps> = ({ userId }
                   style={styles.mapBtn}
                   onPress={() =>
                     openMap(
-                      alert.location?.latitude || 37.7749,
-                      alert.location?.longitude || -122.4194,
+                      alert.location?.latitude || 28.6139,
+                      alert.location?.longitude || 77.2090,
                     )
                   }>
                   <Text style={styles.mapBtnText}>Google Maps</Text>
@@ -270,9 +340,25 @@ export const AlertHistoryScreen: React.FC<AlertHistoryScreenProps> = ({ userId }
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#020617' },
   scroll: { flex: 1 },
-  content: { padding: 16, paddingBottom: 40 },
-  title: { fontSize: 22, fontWeight: 'bold', color: '#ffffff', marginBottom: 4 },
-  subtitle: { fontSize: 13, color: '#94a3b8', marginBottom: 16, lineHeight: 18 },
+  content: { padding: 16, paddingBottom: 50 },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 16,
+  },
+  title: { fontSize: 20, fontWeight: 'bold', color: '#ffffff', marginBottom: 2 },
+  subtitle: { fontSize: 12, color: '#94a3b8' },
+  clearAllBtn: {
+    backgroundColor: 'rgba(225, 29, 72, 0.2)',
+    borderWidth: 1,
+    borderColor: '#e11d48',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    marginLeft: 8,
+  },
+  clearAllBtnText: { color: '#f43f5e', fontSize: 11, fontWeight: 'bold' },
   emptyCard: {
     backgroundColor: '#0f172a',
     padding: 24,
@@ -300,6 +386,7 @@ const styles = StyleSheet.create({
   },
   alertId: { fontSize: 15, fontWeight: 'bold', color: '#ffffff' },
   alertTime: { fontSize: 11, color: '#94a3b8', marginTop: 2 },
+  headerBadgeGroup: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   statusBadge: {
     paddingHorizontal: 8,
     paddingVertical: 4,
@@ -307,6 +394,28 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   statusText: { fontSize: 10, fontWeight: 'bold' },
+  deleteSingleBtn: {
+    width: 28,
+    height: 28,
+    backgroundColor: 'rgba(225, 29, 72, 0.2)',
+    borderWidth: 1,
+    borderColor: '#e11d48',
+    borderRadius: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  deleteSingleBtnText: { fontSize: 12 },
+  recipientInfoBox: {
+    backgroundColor: '#1e293b',
+    padding: 10,
+    borderRadius: 10,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#334155',
+  },
+  recipientLabel: { fontSize: 10, fontWeight: 'bold', color: '#38bdf8', marginBottom: 2 },
+  recipientEmail: { fontSize: 13, fontWeight: 'bold', color: '#ffffff' },
+  recipientPhone: { fontSize: 11, color: '#cbd5e1', marginTop: 2 },
   openTrackerCard: {
     padding: 10,
     borderRadius: 10,

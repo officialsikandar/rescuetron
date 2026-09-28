@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { History, ExternalLink, PhoneCall, CheckCircle2, AlertTriangle, Clock, MapPin, Activity, ShieldCheck, Mail, RefreshCw, Eye, AlertCircle } from 'lucide-react';
-import { getAlertHistory, triggerAutoCallEscalation, simulateEmailOpen } from '../services/api';
+import { History, ExternalLink, PhoneCall, CheckCircle2, AlertTriangle, Clock, MapPin, Activity, ShieldCheck, Mail, RefreshCw, Eye, AlertCircle, Trash2 } from 'lucide-react';
+import { getAlertHistory, triggerAutoCallEscalation, simulateEmailOpen, deleteAlertRecord, clearAlertHistory } from '../services/api';
 import { AlertRecord, AuthState } from '../types';
 
 interface AlertHistoryTabProps {
@@ -32,6 +32,26 @@ export const AlertHistoryTab: React.FC<AlertHistoryTabProps> = ({ authState, onO
     const interval = setInterval(fetchHistory, 3000);
     return () => clearInterval(interval);
   }, [authState.user?.id]);
+
+  const handleDeleteSingle = async (alertId: string) => {
+    try {
+      await deleteAlertRecord(alertId);
+      setAlerts((prev) => prev.filter((a) => a.id !== alertId));
+    } catch (e) {
+      setAlerts((prev) => prev.filter((a) => a.id !== alertId));
+    }
+  };
+
+  const handleClearAll = async () => {
+    if (window.confirm('Are you sure you want to delete all emergency incident logs?')) {
+      try {
+        await clearAlertHistory(authState.user?.id || 'demo');
+        setAlerts([]);
+      } catch (e) {
+        setAlerts([]);
+      }
+    }
+  };
 
   // Simulate Auto Call Escalation
   const handleSimulateAutoCall = async (alert: AlertRecord) => {
@@ -72,14 +92,26 @@ export const AlertHistoryTab: React.FC<AlertHistoryTabProps> = ({ authState, onO
           <p className="text-[10px] text-slate-400">Live email open tracking & GPS dispatch status</p>
         </div>
 
-        <button
-          onClick={fetchHistory}
-          disabled={loading}
-          className="p-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 text-[10px] hover:bg-slate-800 transition flex items-center gap-1"
-        >
-          <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
-          <span>Refresh</span>
-        </button>
+        <div className="flex items-center gap-2">
+          {alerts.length > 0 && (
+            <button
+              onClick={handleClearAll}
+              className="p-1.5 rounded-lg bg-rose-950/60 border border-rose-800/80 text-rose-300 text-[10px] hover:bg-rose-900 transition flex items-center gap-1 font-bold"
+              title="Clear all incident history"
+            >
+              <Trash2 className="w-3 h-3 text-rose-400" />
+              <span>Clear All</span>
+            </button>
+          )}
+          <button
+            onClick={fetchHistory}
+            disabled={loading}
+            className="p-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 text-[10px] hover:bg-slate-800 transition flex items-center gap-1"
+          >
+            <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
+            <span>Refresh</span>
+          </button>
+        </div>
       </div>
 
       {/* Alert Cards List */}
@@ -103,27 +135,36 @@ export const AlertHistoryTab: React.FC<AlertHistoryTabProps> = ({ authState, onO
                   <span>{new Date(alert.timestamp).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}</span>
                 </div>
 
-                {/* Status Badge */}
-                {alert.emailOpened || alert.status === 'TRACKER_OPENED' || alert.status === 'EMAIL_OPENED' ? (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-950 border border-emerald-800 text-emerald-400 text-[10px] font-semibold">
-                    <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-                    <span>Email Opened</span>
-                  </span>
-                ) : alert.status === 'ESCALATED_CALL' ? (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-rose-950 border border-rose-800 text-rose-400 text-[10px] font-semibold animate-pulse">
-                    <PhoneCall className="w-3 h-3" />
-                    <span>Escalated to Call</span>
-                  </span>
-                ) : alert.status === 'CANCELLED_BY_USER' ? (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-slate-800 border border-slate-700 text-slate-400 text-[10px] font-semibold">
-                    <span>Cancelled</span>
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-950 border border-amber-800 text-amber-300 text-[10px] font-semibold animate-pulse">
-                    <AlertTriangle className="w-3 h-3 text-amber-400" />
-                    <span>Email Not Opened Yet</span>
-                  </span>
-                )}
+                {/* Status Badge & Delete Button */}
+                <div className="flex items-center gap-1.5">
+                  {alert.emailOpened || alert.status === 'TRACKER_OPENED' || alert.status === 'EMAIL_OPENED' ? (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-950 border border-emerald-800 text-emerald-400 text-[10px] font-semibold">
+                      <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                      <span>Email Opened</span>
+                    </span>
+                  ) : alert.status === 'ESCALATED_CALL' ? (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-rose-950 border border-rose-800 text-rose-400 text-[10px] font-semibold animate-pulse">
+                      <PhoneCall className="w-3 h-3" />
+                      <span>Escalated to Call</span>
+                    </span>
+                  ) : alert.status === 'CANCELLED_BY_USER' ? (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-slate-800 border border-slate-700 text-slate-400 text-[10px] font-semibold">
+                      <span>Cancelled</span>
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-950 border border-amber-800 text-amber-300 text-[10px] font-semibold animate-pulse">
+                      <AlertTriangle className="w-3 h-3 text-amber-400" />
+                      <span>Email Not Opened Yet</span>
+                    </span>
+                  )}
+                  <button
+                    onClick={() => handleDeleteSingle(alert.id)}
+                    className="p-1 rounded-lg bg-rose-950/40 border border-rose-800/60 text-rose-400 hover:bg-rose-900 transition"
+                    title="Delete this incident log"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </button>
+                </div>
               </div>
 
               {/* Accident Summary Info */}

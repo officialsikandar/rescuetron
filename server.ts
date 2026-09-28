@@ -1054,8 +1054,25 @@ app.post("/api/alert/trigger", async (req, res) => {
   const { userId, userEmail, userName, location, sensorSnapshot, contactEmail, contactPhone } = req.body;
 
   const mailCfg = getMailConfig();
-  const targetContactEmail = contactEmail || mailCfg.user || "sikandaritguy@gmail.com";
+
+  // 1. Resolve Target User ID
+  let targetUserId = userId;
+  if ((!targetUserId || targetUserId === "user_demo_101") && userEmail) {
+    const foundId = await dbGet<string>(`usersByEmail/${sanitizeEmailKey(userEmail)}`);
+    if (foundId) targetUserId = foundId;
+  }
+
+  // 2. Fetch User & Primary Contact directly from Database
+  const allContactsObj = (await dbGet<Record<string, StoredContact>>("contacts")) || {};
+  const userContacts = Object.values(allContactsObj).filter((c) => c.userId === targetUserId);
+  const primaryContact = userContacts.find((c) => c.isPrimary) || userContacts[0];
+
+  // 3. Determine target recipient email: DB Primary Contact -> Provided contactEmail -> User Email
+  const targetContactEmail = (primaryContact?.email) || contactEmail || userEmail || mailCfg.user || "sikandaritguy@gmail.com";
+  const targetContactPhone = (primaryContact?.phone) || contactPhone || "+91 98111 22233";
   const targetUserEmail = userEmail || mailCfg.user || "sikandaritguy@gmail.com";
+
+  console.log(`🚨 [SOS Dispatch] Triggered for user "${targetUserId}" (${targetUserEmail}) | Target Recipient Email: "${targetContactEmail}"`);
 
   const trackerId = `trk_${Math.random().toString(36).substring(2, 10)}`;
   const forwardedProto = req.get("x-forwarded-proto") || "https";
@@ -1079,7 +1096,7 @@ app.post("/api/alert/trigger", async (req, res) => {
 
   const newAlert: StoredAlert = {
     id: alertId,
-    userId: userId || "user_demo_101",
+    userId: targetUserId || "user_demo_101",
     userEmail: targetUserEmail,
     userName: userName || "Rahul Sharma",
     timestamp: new Date().toISOString(),
@@ -1100,7 +1117,7 @@ app.post("/api/alert/trigger", async (req, res) => {
     status: "ALERT_SENT",
     trackerId,
     contactNotifiedEmail: targetContactEmail,
-    contactNotifiedPhone: contactPhone || "+91 98111 22233",
+    contactNotifiedPhone: targetContactPhone,
     emailOpened: false,
     emailOpenCount: 0,
     escalationTimerSeconds: settings.trackerWaitSeconds || 20,
@@ -1309,6 +1326,49 @@ app.get(["/api/alert/history/:userId", "/api/alert/history", "/api/alerts/histor
   }
 
   return res.json({ success: true, alerts: history });
+});
+
+// Delete single alert from history
+app.delete(["/api/alert/:alertId", "/api/alerts/:alertId"], async (req, res) => {
+  const { alertId } = req.params;
+  const alert = await dbGet<StoredAlert>(`alerts/${alertId}`);
+
+  if (alert) {
+    if (alert.trackerId) {
+      await dbSet(`alertsByTracker/${alert.trackerId}`, null);
+    }
+    await dbSet(`alerts/${alertId}`, null);
+    broadcastWs({ type: "ALERT_DELETED", alertId });
+    console.log(`🗑️ [Firebase RTDB] Deleted alert /alerts/${alertId}`);
+  }
+
+  return res.json({
+    success: true,
+    message: "Incident record deleted successfully.",
+  });
+});
+
+// Clear all alert history for user
+app.delete(["/api/alert/history/clear/:userId", "/api/alerts/history/clear/:userId", "/api/alert/history/clear"], async (req, res) => {
+  const userId = req.params.userId || (req.query.userId as string | undefined);
+  const allAlertsObj = (await dbGet<Record<string, StoredAlert>>("alerts")) || {};
+
+  for (const [id, alert] of Object.entries(allAlertsObj)) {
+    if (!userId || userId === "all" || userId === "demo" || alert.userId === userId) {
+      if (alert.trackerId) {
+        await dbSet(`alertsByTracker/${alert.trackerId}`, null);
+      }
+      await dbSet(`alerts/${id}`, null);
+    }
+  }
+
+  broadcastWs({ type: "ALERT_HISTORY_CLEARED", userId });
+  console.log(`🗑️ [Firebase RTDB] Cleared alert history for user ${userId || "all"}`);
+
+  return res.json({
+    success: true,
+    message: "Alert history cleared successfully.",
+  });
 });
 
 app.get("/api/email/status", async (_req, res) => {

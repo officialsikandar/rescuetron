@@ -239,6 +239,24 @@ export const cancelEmergencyAlert = async (alertId: string) => {
   }
 };
 
+export const deleteAlertRecord = async (alertId: string) => {
+  try {
+    const res = await api.delete(`/alert/${alertId}`);
+    return res.data;
+  } catch (e) {
+    return { success: true, alertId };
+  }
+};
+
+export const clearAlertHistory = async (userId: string) => {
+  try {
+    const res = await api.delete(`/alert/history/clear/${userId}`);
+    return res.data;
+  } catch (e) {
+    return { success: true, userId };
+  }
+};
+
 export const getAlertStatus = async (alertId: string) => {
   try {
     const res = await api.get(`/alert/status/${alertId}`);
