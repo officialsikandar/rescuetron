@@ -6,7 +6,6 @@ import { WebSocketServer, WebSocket } from "ws";
 import { createServer as createViteServer } from "vite";
 import { initializeApp, cert, getApps } from "firebase-admin/app";
 import { getDatabase } from "firebase-admin/database";
-import { MongoClient, Db } from "mongodb";
 import dotenv from "dotenv";
 import {
   sendOtpEmail,
@@ -33,28 +32,6 @@ app.use((req, res, next) => {
 });
 
 app.use(express.json());
-
-// ==========================================
-// 0. MONGODB DATABASE ENGINE INTEGRATION
-// ==========================================
-const MONGO_URI = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/rescuetron";
-let mongoDb: Db | null = null;
-
-async function initMongo() {
-  try {
-    const client = new MongoClient(MONGO_URI, {
-      connectTimeoutMS: 5000,
-      serverSelectionTimeoutMS: 5000,
-    });
-    await client.connect();
-    mongoDb = client.db("rescuetron");
-    console.log(`🍃 [MongoDB Engine] Connected successfully to MongoDB: ${MONGO_URI}`);
-  } catch (err: any) {
-    console.warn(`ℹ️ [MongoDB Notice] ${err.message}. (Active persistence: Firebase RTDB & Local JSON mirror)`);
-  }
-}
-
-initMongo();
 
 // ==========================================
 // 1. FIREBASE REALTIME DATABASE ENGINE (PRIMARY SOURCE OF TRUTH)
@@ -194,55 +171,32 @@ function setLocalNode(cleanPath: string, data: any) {
 
 loadLocalDb();
 
-// Universal Database Engine (MongoDB + Firebase RTDB + Local Mirror)
+// Universal Database Engine (Firebase Realtime Database Primary + Local Mirror)
 export async function dbGet<T = any>(nodePath: string): Promise<T | null> {
   const cleanPath = sanitizeDbPath(nodePath);
 
-  // 1. Try MongoDB
-  if (mongoDb) {
-    try {
-      const doc = await mongoDb.collection("store").findOne({ _id: cleanPath as any });
-      if (doc && doc.data !== undefined && doc.data !== null) {
-        setLocalNode(cleanPath, doc.data);
-        return doc.data as T;
-      }
-    } catch (e: any) {
-      // quiet
-    }
-  }
-
-  // 2. Try Firebase Admin SDK
+  // 1. Primary: Firebase Admin SDK
   if (firebaseDb) {
     try {
       const snapshot = await firebaseDb.ref(cleanPath).once("value");
       const val = snapshot.val();
-      if (val !== undefined && val !== null) {
-        lastFirebaseSuccess = new Date().toISOString();
-        setLocalNode(cleanPath, val);
-        if (mongoDb) {
-          mongoDb.collection("store").updateOne({ _id: cleanPath as any }, { $set: { data: val, updatedAt: new Date() } }, { upsert: true }).catch(() => {});
-        }
-        return val as T;
-      }
+      lastFirebaseSuccess = new Date().toISOString();
+      setLocalNode(cleanPath, val ?? null);
+      return (val ?? null) as T | null;
     } catch (e: any) {
       lastFirebaseError = `Admin read failed on /${cleanPath}: ${e.message}`;
     }
   }
 
-  // 3. Token-authenticated REST Fallback
+  // 2. Token-authenticated Firebase REST API
   try {
     const authParam = await getFirebaseAuthQuery();
     const res = await fetch(`${FIREBASE_DATABASE_URL}/${cleanPath}.json${authParam}`);
     if (res.ok) {
       const json = await res.json();
       lastFirebaseSuccess = new Date().toISOString();
-      if (json !== undefined && json !== null) {
-        setLocalNode(cleanPath, json);
-        if (mongoDb) {
-          mongoDb.collection("store").updateOne({ _id: cleanPath as any }, { $set: { data: json, updatedAt: new Date() } }, { upsert: true }).catch(() => {});
-        }
-        return json as T;
-      }
+      setLocalNode(cleanPath, json ?? null);
+      return (json ?? null) as T | null;
     } else {
       const errText = await res.text();
       lastFirebaseError = `REST read HTTP ${res.status} on /${cleanPath}: ${errText}`;
@@ -251,47 +205,18 @@ export async function dbGet<T = any>(nodePath: string): Promise<T | null> {
     lastFirebaseError = `REST read exception on /${cleanPath}: ${err.message}`;
   }
 
-  // 4. Fallback to synchronized persistent store
+  // 3. Fallback to local mirror only if Firebase network request failed
   return getLocalNode<T>(cleanPath);
 }
 
-// Universal Database Writer (MongoDB + Firebase RTDB + Local Mirror)
+// Universal Database Writer (Firebase Realtime Database Primary + Local Mirror)
 export async function dbSet(nodePath: string, data: any): Promise<boolean> {
   const cleanPath = sanitizeDbPath(nodePath);
 
   // Always update local persistent mirror immediately
   setLocalNode(cleanPath, data);
 
-  // 1. Write to MongoDB
-  if (mongoDb) {
-    try {
-      if (data === null) {
-        await mongoDb.collection("store").deleteOne({ _id: cleanPath as any });
-      } else {
-        await mongoDb.collection("store").updateOne(
-          { _id: cleanPath as any },
-          { $set: { data, updatedAt: new Date() } },
-          { upsert: true }
-        );
-      }
-
-      // Keep top-level parent node (e.g. "alerts", "contacts", "users") synchronized in MongoDB
-      const parts = cleanPath.split("/").filter(Boolean);
-      if (parts.length > 1) {
-        const rootKey = parts[0];
-        const rootData = localDbCache[rootKey] ?? {};
-        await mongoDb.collection("store").updateOne(
-          { _id: rootKey as any },
-          { $set: { data: rootData, updatedAt: new Date() } },
-          { upsert: true }
-        );
-      }
-    } catch (err) {
-      // quiet
-    }
-  }
-
-  // 2. Primary: Firebase Admin SDK
+  // 1. Primary: Firebase Admin SDK
   if (firebaseDb) {
     try {
       if (data === null) {
@@ -306,7 +231,7 @@ export async function dbSet(nodePath: string, data: any): Promise<boolean> {
     }
   }
 
-  // 3. Fallback: Authenticated REST
+  // 2. Fallback: Authenticated Firebase REST API
   try {
     const authParam = await getFirebaseAuthQuery();
     const restUrl = `${FIREBASE_DATABASE_URL}/${cleanPath}.json${authParam}`;
@@ -1424,11 +1349,12 @@ app.delete(["/api/alert/:alertId", "/api/alerts/:alertId"], async (req, res) => 
   });
 });
 
-// Clear all alert history for user
+// Clear all alert history for user in Firebase Realtime Database
 app.delete(["/api/alert/history/clear/:userId", "/api/alerts/history/clear/:userId", "/api/alert/history/clear"], async (req, res) => {
   const rawUserId = req.params.userId || (req.query.userId as string | undefined);
   const { userId: resolvedUserId, email: resolvedEmail } = await resolveUserIdentity(req, rawUserId);
   const allAlertsObj = (await dbGet<Record<string, StoredAlert>>("alerts")) || {};
+  const remainingAlerts: Record<string, StoredAlert> = {};
 
   for (const [id, alert] of Object.entries(allAlertsObj)) {
     if (!alert || typeof alert !== "object") continue;
@@ -1445,15 +1371,20 @@ app.delete(["/api/alert/history/clear/:userId", "/api/alerts/history/clear/:user
         await dbSet(`alertsByTracker/${alert.trackerId}`, null);
       }
       await dbSet(`alerts/${id}`, null);
+    } else {
+      remainingAlerts[id] = alert;
     }
   }
+
+  // Sync the /alerts root node in Firebase Realtime Database
+  await dbSet("alerts", Object.keys(remainingAlerts).length > 0 ? remainingAlerts : null);
 
   broadcastWs({ type: "ALERT_HISTORY_CLEARED", userId: resolvedUserId || rawUserId });
   console.log(`🗑️ [Firebase RTDB] Cleared alert history for user ${resolvedUserId || rawUserId || "all"}`);
 
   return res.json({
     success: true,
-    message: "Alert history cleared successfully.",
+    message: "Alert history cleared successfully in Firebase Database.",
   });
 });
 
