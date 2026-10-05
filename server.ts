@@ -1778,35 +1778,36 @@ app.get("/api/tracker/:trackerId", async (req, res) => {
   });
 });
 
-// Test Email via Brevo & Resend HTTPS API (GET endpoint for instant browser testing)
-app.get("/api/test-resend", async (req, res) => {
+// Test Email via Brevo HTTPS API (GET endpoint for instant browser testing)
+app.get(["/api/test-brevo", "/api/test-resend"], async (req, res) => {
   const brevoApiKey = (
     process.env.BREVO_API_KEY ||
     process.env.BREVO_KEY ||
+    process.env.BREVO_APIKEY ||
     process.env.SENDINBLUE_API_KEY ||
+    process.env.SENDINBLUE_KEY ||
+    process.env.BREVO_TOKEN ||
     ((process.env.SMTP_PASS || "").startsWith("xsib-") || (process.env.SMTP_PASS || "").startsWith("xkeysib-") ? process.env.SMTP_PASS : "")
   )?.replace(/["']/g, "").trim();
-  const resendApiKey = (process.env.RESEND_API_KEY || "").replace(/["']/g, "").trim();
   const targetEmail = ((req.query.email as string) || "sikandaritguy@gmail.com").trim().toLowerCase();
 
   const result = await sendViaHttpsApi({
     toEmail: targetEmail,
-    subject: "⚡ [Rescuetron Test] Gateway Dispatch Verification",
+    subject: "🚨 [Brevo Gateway Test] Rescuetron Emergency System",
     htmlContent: `<div style="padding:20px;background:#0f172a;color:#fff;font-family:sans-serif;border-radius:10px;">
-      <h2 style="color:#e11d48;">⚡ Rescuetron Emergency System</h2>
-      <p>Your Email Gateway is active and successfully delivering emails from Render!</p>
+      <h2 style="color:#e11d48;">⚡ Rescuetron Emergency System (Brevo Gateway)</h2>
+      <p>Brevo HTTPS API Gateway is active and delivering emergency emails!</p>
       <p><strong>Target:</strong> ${targetEmail}</p>
       <p><strong>Timestamp:</strong> ${new Date().toISOString()}</p>
     </div>`,
-    textContent: `Rescuetron Test Email delivered to ${targetEmail}.`,
+    textContent: `Rescuetron Brevo Test Email delivered to ${targetEmail}.`,
   });
 
   return res.json({
     success: Boolean(result?.sent),
+    provider: "Brevo HTTPS API",
     brevoApiKeyConfigured: Boolean(brevoApiKey),
-    resendApiKeyConfigured: Boolean(resendApiKey),
     maskedBrevoKey: brevoApiKey ? `${brevoApiKey.slice(0, 6)}...${brevoApiKey.slice(-4)}` : null,
-    maskedResendKey: resendApiKey ? `${resendApiKey.slice(0, 6)}...${resendApiKey.slice(-4)}` : null,
     targetEmail,
     result,
   });

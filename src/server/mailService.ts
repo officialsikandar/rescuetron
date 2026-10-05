@@ -24,10 +24,10 @@ export async function sendViaHttpsApi(params: {
 }): Promise<{ sent: boolean; messageId?: string; provider?: string; error?: string } | null> {
   const { toEmail, subject, htmlContent, textContent } = params;
   const cleanToEmail = (toEmail || "").trim().toLowerCase();
-  let resendErrorResult: { sent: boolean; messageId?: string; provider?: string; error?: string } | null = null;
 
-  // 1. Check Brevo / Sendinblue v3 REST API Key (must start with xkeysib-, NOT xsmtpsib- SMTP password)
-  // 1. Check Resend API Key (https://resend.com - Port 443 HTTPS REST API - Instant & Highly Reliable)
+  /*
+  // [DISABLED AS PER USER REQUEST - RESEND COMMENTED OUT]
+  // 1. Check Resend API Key (https://resend.com - Port 443 HTTPS REST API)
   const resendApiKey = (
     process.env.RESEND_API_KEY ||
     process.env.RESEND_KEY ||
@@ -60,21 +60,14 @@ export async function sendViaHttpsApi(params: {
       if (res.ok && data.id) {
         console.log(`✅ [HTTPS Email Gateway SUCCESS] Resend Email Delivered to "${cleanToEmail}"! Message ID: ${data.id}`);
         return { sent: true, messageId: data.id, provider: "Resend HTTPS API" };
-      } else {
-        const errorReason = data.message || data.error || JSON.stringify(data);
-        console.warn(`⚠️ [HTTPS Email Gateway Notice] Resend response (HTTP ${res.status}): ${errorReason}`);
-        resendErrorResult = {
-          sent: false,
-          error: `Resend Notice (HTTP ${res.status}): ${errorReason}`,
-          provider: "Resend HTTPS API",
-        };
       }
     } catch (err: any) {
       console.warn(`⚠️ [HTTPS Email Gateway Exception] Resend call skipped:`, err.message);
     }
   }
+  */
 
-  // 2. Check Brevo REST API Key if available
+  // 1. PRIMARY: Brevo / Sendinblue v3 REST API (https://api.brevo.com/v3/smtp/email)
   const rawBrevoCandidate = (
     process.env.BREVO_API_KEY ||
     process.env.BREVO_KEY ||
@@ -95,7 +88,7 @@ export async function sendViaHttpsApi(params: {
         .trim();
       const senderEmail = rawSender.includes("smtp-brevo.com") ? "sikandaritguy@gmail.com" : rawSender;
       const maskedKey = `${brevoApiKey.slice(0, 6)}...${brevoApiKey.slice(-4)}`;
-      console.log(`🚀 [HTTPS Email Gateway] Dispatching via Brevo HTTPS API to "${cleanToEmail}" | Sender: "${senderEmail}" | Key: "${maskedKey}"...`);
+      console.log(`🚀 [Brevo Gateway] Dispatching via Brevo HTTPS API to "${cleanToEmail}" | Sender: "${senderEmail}" | Key: "${maskedKey}"...`);
 
       const res = await fetch("https://api.brevo.com/v3/smtp/email", {
         method: "POST",
@@ -116,46 +109,28 @@ export async function sendViaHttpsApi(params: {
       const data = await res.json().catch(() => ({}));
       if (res.ok && (data.messageId || data.messageIds)) {
         const msgId = data.messageId || (data.messageIds && data.messageIds[0]) || "brevo_ok";
-        console.log(`✅ [HTTPS Email Gateway SUCCESS] Delivered via Brevo HTTPS API to "${cleanToEmail}"! ID: ${msgId}`);
+        console.log(`✅ [Brevo Gateway SUCCESS] Delivered via Brevo HTTPS API to "${cleanToEmail}"! ID: ${msgId}`);
         return { sent: true, messageId: msgId, provider: "Brevo HTTPS API" };
+      } else {
+        const errorReason = data.message || data.error || JSON.stringify(data);
+        console.warn(`⚠️ [Brevo Gateway Notice] Brevo response (HTTP ${res.status}): ${errorReason}`);
+        return {
+          sent: false,
+          error: `Brevo Notice (HTTP ${res.status}): ${errorReason}`,
+          provider: "Brevo HTTPS API",
+        };
       }
     } catch (err: any) {
-      console.warn(`⚠️ [HTTPS Email Gateway Notice] Brevo request skipped:`, err.message);
+      console.warn(`⚠️ [Brevo Gateway Exception] Brevo request skipped:`, err.message);
+      return {
+        sent: false,
+        error: `Brevo Exception: ${err.message}`,
+        provider: "Brevo HTTPS API",
+      };
     }
   }
 
-  // 3. Check SendGrid API Key (https://sendgrid.com)
-  const sendgridApiKey = process.env.SENDGRID_API_KEY;
-  if (sendgridApiKey) {
-    try {
-      console.log(`🚀 [HTTPS Email Gateway] Dispatching via SendGrid API to ${toEmail}...`);
-      const senderEmail = config.fromEmail;
-      const res = await fetch("https://api.sendgrid.com/v3/mail/send", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${sendgridApiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          personalizations: [{ to: [{ email: toEmail }] }],
-          from: { email: senderEmail, name: "Rescuetron Emergency Network" },
-          subject,
-          content: [
-            { type: "text/plain", value: textContent },
-            { type: "text/html", value: htmlContent },
-          ],
-        }),
-      });
-      if (res.ok || res.status === 202) {
-        console.log(`✅ [HTTPS Email Gateway] Sent via SendGrid HTTPS API!`);
-        return { sent: true, provider: "SendGrid HTTPS API" };
-      }
-    } catch (err: any) {
-      console.error(`❌ [HTTPS Email Gateway] SendGrid request failed:`, err.message);
-    }
-  }
-
-  return resendErrorResult;
+  return null;
 }
 
 export interface MailConfig {
@@ -272,16 +247,23 @@ export function getGmailFallbackTransporter(): { transport: Transporter; user: s
 }
 
 export async function verifySmtpConnection(): Promise<{ configured: boolean; verified: boolean; message: string; user?: string }> {
-  const resendKey = (process.env.RESEND_API_KEY || process.env.RESEND_KEY || "").replace(/["']/g, "").trim();
-  const brevoKey = (process.env.BREVO_API_KEY || process.env.BREVO_KEY || "").replace(/["']/g, "").trim();
+  const brevoKey = (
+    process.env.BREVO_API_KEY ||
+    process.env.BREVO_KEY ||
+    process.env.BREVO_APIKEY ||
+    process.env.SENDINBLUE_API_KEY ||
+    process.env.SENDINBLUE_KEY ||
+    process.env.BREVO_TOKEN ||
+    ((process.env.SMTP_PASS || "").startsWith("xkeysib-") ? process.env.SMTP_PASS : "")
+  )?.replace(/["']/g, "").trim();
 
   const config = getMailConfig();
 
-  if (brevoKey && brevoKey.startsWith("xkeysib-")) {
+  if (brevoKey && !brevoKey.startsWith("xsmtpsib-")) {
     return {
       configured: true,
       verified: true,
-      message: "Brevo HTTPS Email Gateway connected and verified.",
+      message: "Brevo HTTPS REST API Gateway active and verified.",
       user: config.fromEmail,
     };
   }
@@ -290,16 +272,7 @@ export async function verifySmtpConnection(): Promise<{ configured: boolean; ver
     return {
       configured: true,
       verified: true,
-      message: "Brevo SMTP Gateway connected and verified (all recipients supported).",
-      user: config.fromEmail,
-    };
-  }
-
-  if (resendKey) {
-    return {
-      configured: true,
-      verified: true,
-      message: "Resend HTTPS Email Gateway connected and verified.",
+      message: "Brevo SMTP Gateway connected and verified.",
       user: config.fromEmail,
     };
   }
