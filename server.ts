@@ -1217,32 +1217,42 @@ app.post(["/api/alert/trigger", "/api/emergency/dispatch"], async (req, res) => 
   // 4. Resolve exact GPS Coordinates (from request top-level, request.location, or user's latest saved GPS in Firebase)
   const savedLatestLoc =
     (await dbGet<any>(`locations/${targetUserId}/latest`)) ||
+    (user?.id ? await dbGet<any>(`locations/${user.id}/latest`) : null) ||
     user?.lastLocation ||
     null;
 
+  const reqLatNum = latitude !== undefined && latitude !== null ? Number(latitude) : (location?.latitude !== undefined && location?.latitude !== null ? Number(location.latitude) : NaN);
+  const reqLngNum = longitude !== undefined && longitude !== null ? Number(longitude) : (location?.longitude !== undefined && location?.longitude !== null ? Number(location.longitude) : NaN);
+
   const rawLat =
-    latitude !== undefined
-      ? Number(latitude)
-      : location?.latitude !== undefined
-      ? Number(location.latitude)
-      : savedLatestLoc?.latitude !== undefined
+    !isNaN(reqLatNum) && reqLatNum !== 0
+      ? reqLatNum
+      : savedLatestLoc?.latitude !== undefined && savedLatestLoc?.latitude !== null && Number(savedLatestLoc.latitude) !== 0
       ? Number(savedLatestLoc.latitude)
+      : !isNaN(reqLatNum)
+      ? reqLatNum
       : 0;
 
   const rawLng =
-    longitude !== undefined
-      ? Number(longitude)
-      : location?.longitude !== undefined
-      ? Number(location.longitude)
-      : savedLatestLoc?.longitude !== undefined
+    !isNaN(reqLngNum) && reqLngNum !== 0
+      ? reqLngNum
+      : savedLatestLoc?.longitude !== undefined && savedLatestLoc?.longitude !== null && Number(savedLatestLoc.longitude) !== 0
       ? Number(savedLatestLoc.longitude)
+      : !isNaN(reqLngNum)
+      ? reqLngNum
       : 0;
+
+  const rawAddress =
+    address ||
+    location?.address ||
+    savedLatestLoc?.address ||
+    `${rawLat.toFixed(6)}, ${rawLng.toFixed(6)}`;
 
   const coordsOnlyString = `${rawLat.toFixed(6)}, ${rawLng.toFixed(6)}`;
   const rawSpeed = Number(speedKmh ?? location?.speed ?? savedLatestLoc?.speed ?? 45);
   const rawGForce = Number(gForce ?? sensorSnapshot?.totalG ?? 5.8);
 
-  console.log(`🚨 [SOS Dispatch] Crash on device of "${resolvedVictimName}" (${targetUserId} / ${targetUserEmail}) | Coords: ${coordsOnlyString} | To: "${targetContactEmail}"`);
+  console.log(`🚨 [SOS Dispatch] Crash on device of "${resolvedVictimName}" (${targetUserId} / ${targetUserEmail}) | Coords: ${coordsOnlyString} (${rawAddress}) | To: "${targetContactEmail}"`);
 
   const trackerId = `trk_${Math.random().toString(36).substring(2, 10)}`;
   const forwardedProto = req.get("x-forwarded-proto") || "https";
@@ -1792,34 +1802,72 @@ app.get("/api/test-resend", async (req, res) => {
   });
 });
 
-// Test Email
+// Test Email - Resolves Live Firebase User Profile & Real Location
 app.post("/api/email/test", async (req, res) => {
-  const { targetEmail } = req.body;
-  const destination = targetEmail || getMailConfig().user || "sikandaritguy@gmail.com";
+  const { targetEmail, userId } = req.body;
+  const user = await findCrashedUserProfile(req, userId, targetEmail);
+  const targetUserId = user?.id || userId || "user_demo_101";
+  const destination = (targetEmail || user?.email || getMailConfig().user || "sikandaritguy@gmail.com").trim();
+
+  const userContacts = await findUserContacts(req, targetUserId, destination);
+  const primaryContact = userContacts.find((c) => c.isPrimary) || userContacts[0];
+
+  const savedLatestLoc =
+    (await dbGet<any>(`locations/${targetUserId}/latest`)) ||
+    (user?.id ? await dbGet<any>(`locations/${user.id}/latest`) : null) ||
+    user?.lastLocation ||
+    null;
+
+  const lat = savedLatestLoc?.latitude !== undefined ? Number(savedLatestLoc.latitude) : 27.061535;
+  const lng = savedLatestLoc?.longitude !== undefined ? Number(savedLatestLoc.longitude) : 75.765621;
+  const speed = savedLatestLoc?.speed !== undefined ? Number(savedLatestLoc.speed) : 48;
+  const address = savedLatestLoc?.address || `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+
+  const victimName = user?.fullName || (user?.email ? user.email.split("@")[0] : "Emergency User");
+  const victimPhone = user?.phone || "+91 98765 43210";
+  const bloodGroup = user?.bloodGroup || "O+";
+  const allergies = user?.allergies || "None";
+  const medicalConditions = user?.medicalConditions || "None";
+  const medications = user?.medications || "None";
+  const organDonor = Boolean(user?.organDonor ?? (user as any)?.isOrganDonor ?? true);
+
+  const trackerId = `trk_test_${Date.now()}`;
+  const alertId = `alert_test_${Date.now()}`;
+  const trackerUrl = `https://ais-dev-n5as5ltfc5bad2meu4urx5-651964088015.asia-east1.run.app/?tracker=${trackerId}`;
+  const trackingPixelUrl = `https://ais-dev-n5as5ltfc5bad2meu4urx5-651964088015.asia-east1.run.app/api/email/track-open/${alertId}.png`;
+
   const mailResult = await sendEmergencyAlertEmail({
     toEmail: destination,
-    contactName: "Sikandar / Emergency Responder",
-    victimName: "Rahul Sharma (Rescuetron Test)",
-    victimPhone: "+91 98765 43210",
-    locationAddress: "Connaught Place, New Delhi, Delhi 110001, India",
-    latitude: 28.6139,
-    longitude: 77.209,
-    gForce: 6.42,
-    speedKmh: 52.4,
-    trackerUrl: "https://ais-dev-n5as5ltfc5bad2meu4urx5-651964088015.asia-east1.run.app/?tracker=trk_demo",
-    bloodGroup: "O+",
-    allergies: "Penicillin, Dust",
-    medicalConditions: "Mild Asthma",
-    medications: "Inhaler as needed",
-    alertId: "alert_test_101",
-    trackingPixelUrl: "https://ais-dev-n5as5ltfc5bad2meu4urx5-651964088015.asia-east1.run.app/api/email/track-open/alert_test_101.png",
+    contactName: primaryContact?.name || "Emergency Contact",
+    victimName,
+    victimAge: user?.age || 25,
+    victimPhone,
+    victimEmail: user?.email || destination,
+    locationAddress: address,
+    latitude: lat,
+    longitude: lng,
+    gForce: 5.8,
+    speedKmh: speed,
+    trackerUrl,
+    bloodGroup,
+    allergies,
+    medicalConditions,
+    medications,
+    organDonor,
+    alertId,
+    trackingPixelUrl,
   });
 
   return res.json({
     success: mailResult.sent,
     message: mailResult.sent
-      ? `Real emergency email successfully delivered to ${destination} via Gmail SMTP!`
+      ? `Real emergency email successfully delivered to ${destination} with live Firebase data!`
       : `Email dispatch failed: ${mailResult.message}`,
+    victim: {
+      name: victimName,
+      location: { latitude: lat, longitude: lng, address, speed },
+      bloodGroup,
+    },
     mailResult,
   });
 });

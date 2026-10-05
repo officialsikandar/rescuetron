@@ -689,6 +689,16 @@ export async function sendEmergencyAlertEmail(params: {
                   <td style="padding: 6px 0; font-size: 14px; font-weight: 700; color: #ffffff; text-align: right;">${Number(params.speedKmh || 45).toFixed(1)} km/h</td>
                 </tr>
                 <tr>
+                  <td style="padding: 6px 0; font-size: 13px; color: #94a3b8;">GPS Coordinates:</td>
+                  <td style="padding: 6px 0; font-size: 13px; font-weight: 700; color: #38bdf8; text-align: right;">${coordsOnlyText}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 6px 0; font-size: 13px; color: #94a3b8;">Google Maps Link:</td>
+                  <td style="padding: 6px 0; font-size: 12px; font-weight: 700; text-align: right;">
+                    <a href="${googleMapsUrl}" target="_blank" style="color: #38bdf8; text-decoration: underline;">Open in Google Maps ↗</a>
+                  </td>
+                </tr>
+                <tr>
                   <td style="padding: 6px 0; font-size: 13px; color: #94a3b8;">Time of Incident (IST):</td>
                   <td style="padding: 6px 0; font-size: 13px; font-weight: 700; color: #38bdf8; text-align: right;">${istTimeText}</td>
                 </tr>
