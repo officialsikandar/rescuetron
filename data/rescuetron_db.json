@@ -20,11 +20,11 @@
       "isDonor": true,
       "isOrganDonor": true,
       "lastLocation": {
-        "address": "27.061530, 75.765560",
-        "latitude": 27.061529896776413,
-        "longitude": 75.7655597168692,
+        "latitude": 27.06154130352068,
+        "longitude": 75.76555974169256,
+        "address": "27.061541, 75.765560",
         "speed": 48,
-        "timestamp": "2026-10-05T14:15:11.634Z"
+        "timestamp": "2026-10-05T14:45:04.638Z"
       },
       "medicalConditions": "Mild Asthma",
       "medications": "Inhaler as needed",
@@ -162,11 +162,11 @@
       "fullName": "Rahul Sharma",
       "id": "user_demo_101",
       "lastLocation": {
-        "address": "27.061441, 75.765375",
-        "latitude": 27.061440613871838,
-        "longitude": 75.76537450708823,
+        "latitude": 27.061534553215377,
+        "longitude": 75.76562075145999,
+        "address": "27.061535, 75.765621",
         "speed": 48,
-        "timestamp": "2026-10-05T14:01:08.381Z"
+        "timestamp": "2026-10-05T14:32:28.235Z"
       },
       "medicalConditions": "Mild Asthma",
       "medications": "Inhaler as needed",
@@ -186,25 +186,25 @@
   "test_connection": {
     "appName": "Rescuetron Emergency System",
     "databaseStatus": "LIVE_FIREBASE_CONNECTED",
-    "lastHeartbeat": "2026-10-05T14:15:32.834Z"
+    "lastHeartbeat": "2026-10-05T14:27:17.077Z"
   },
   "locations": {
     "user_demo_101": {
       "latest": {
-        "latitude": 27.061440613871838,
-        "longitude": 75.76537450708823,
-        "address": "27.061441, 75.765375",
+        "latitude": 27.061534553215377,
+        "longitude": 75.76562075145999,
+        "address": "27.061535, 75.765621",
         "speed": 48,
-        "timestamp": "2026-10-05T14:01:08.686Z"
+        "timestamp": "2026-10-05T14:32:28.235Z"
       }
     },
     "user_1790525210329": {
       "latest": {
-        "address": "27.061530, 75.765560",
-        "latitude": 27.061529896776413,
-        "longitude": 75.7655597168692,
+        "latitude": 27.06154130352068,
+        "longitude": 75.76555974169256,
+        "address": "27.061541, 75.765560",
         "speed": 48,
-        "timestamp": "2026-10-05T14:15:11.634Z"
+        "timestamp": "2026-10-05T14:45:04.646Z"
       }
     },
     "user_1790656742324": {}
@@ -391,279 +391,574 @@
       "userId": "user_1790656742324",
       "userName": "Rahul Sharma"
     },
-    "alert_1790673166524": {
-      "autoCallTriggeredAt": "2026-09-29T09:15:17.259Z",
-      "contactNotifiedEmail": "SIKANDARITGUY@GMAIL.COM",
-      "contactNotifiedPhone": "+91 98111 22233",
-      "emailOpenCount": 0,
-      "emailOpened": true,
-      "emailOpenedAt": "2026-09-29T09:15:24.977Z",
-      "escalationTimerSeconds": 60,
-      "id": "alert_1790673166524",
-      "location": {
-        "address": "26.991356, 75.743343",
-        "latitude": 26.991355956933393,
-        "longitude": 75.74334273520512,
-        "speed": 48,
-        "timestamp": "2026-09-29T09:12:46.524Z"
-      },
-      "sensorSnapshot": {
-        "accelX": 0,
-        "accelY": 0,
-        "accelZ": 9.81,
-        "gyroAlpha": 14.2,
-        "gyroBeta": 2.1,
-        "gyroGamma": 0.8,
-        "impactDetected": false,
-        "timestamp": "2026-09-29T09:12:35.204Z",
-        "totalG": 1
-      },
-      "status": "TRACKER_OPENED",
-      "timestamp": "2026-09-29T09:12:46.524Z",
-      "timestampIst": "29 Sept 2026, 02:42:46 pm IST",
-      "trackerId": "trk_6l6dkf26",
-      "trackerOpenedAt": "2026-09-29T09:15:24.977Z",
-      "userEmail": "demo@yopmail.com",
-      "userId": "user_1790525210329",
-      "userName": "SIKANDAR KHAN",
-      "victimProfile": {
-        "age": 26,
-        "allergies": "Penicillin, Dust",
-        "bloodGroup": "O+",
-        "email": "demo@yopmail.com",
-        "fullName": "SIKANDAR KHAN",
-        "medicalConditions": "Mild Asthma",
-        "medications": "Inhaler as needed",
-        "organDonor": true,
-        "phone": "+918005913597"
-      }
-    },
-    "alert_1790740230012": {
-      "contactNotifiedEmail": "demo@yopmail.com",
-      "contactNotifiedPhone": "08005913597",
-      "contactPhones": [
-        "08005913597",
-        "+918005913597"
-      ],
-      "emailOpenCount": 0,
-      "emailOpened": false,
-      "escalationTimerSeconds": 30,
-      "id": "alert_1790740230012",
-      "location": {
-        "address": "26.991346, 75.743246",
-        "latitude": 26.991346251174313,
-        "longitude": 75.74324641218348,
-        "speed": 48,
-        "timestamp": "2026-09-30T03:50:30.012Z"
-      },
-      "sensorSnapshot": {
-        "accelX": 0,
-        "accelY": 0,
-        "accelZ": 9.81,
-        "gyroAlpha": 14.2,
-        "gyroBeta": 2.1,
-        "gyroGamma": 0.8,
-        "impactDetected": false,
-        "timestamp": "2026-09-30T03:50:24.304Z",
-        "totalG": 1
-      },
-      "status": "ALERT_SENT",
-      "timestamp": "2026-09-30T03:50:31.178Z",
-      "timestampIst": "30 Sept 2026, 09:20:31 am IST",
-      "trackerId": "trk_uu80146l",
-      "userEmail": "demo@yopmail.com",
-      "userId": "user_1790525210329",
-      "userName": "SIKANDAR KHAN",
-      "victimProfile": {
-        "age": 26,
-        "allergies": "Penicillin, Dust",
-        "bloodGroup": "O+",
-        "email": "demo@yopmail.com",
-        "fullName": "SIKANDAR KHAN",
-        "medicalConditions": "Mild Asthma",
-        "medications": "Inhaler as needed",
-        "organDonor": true,
-        "phone": "+918005913597"
-      }
-    },
-    "alert_1790741763798": {
-      "id": "alert_1790741763798",
-      "userId": "user_1790525210329",
-      "userEmail": "demo@yopmail.com",
-      "userName": "SIKANDAR KHAN",
-      "timestamp": "2026-09-30T04:16:07.114Z",
-      "timestampIst": "30 Sept 2026, 09:46:07 am IST",
-      "location": {
-        "latitude": 26.99135,
-        "longitude": 75.74334,
-        "address": "26.991350, 75.743340",
-        "speed": 48,
-        "timestamp": "2026-09-30T04:16:03.798Z"
-      },
-      "sensorSnapshot": {
-        "totalG": 5.4,
-        "accelX": 1.2,
-        "accelY": 5.1,
-        "accelZ": 8.9,
-        "impactDetected": true,
-        "timestamp": "2026-09-30T04:16:03.798Z"
-      },
-      "status": "ALERT_SENT",
-      "trackerId": "trk_t2km1niu",
-      "contactNotifiedEmail": "demo@yopmail.com",
-      "contactNotifiedPhone": "08005913597",
-      "contactPhones": [
-        "08005913597",
-        "+918005913597"
-      ],
-      "emailOpened": false,
-      "emailOpenCount": 0,
-      "escalationTimerSeconds": 30,
-      "victimProfile": {
-        "fullName": "SIKANDAR KHAN",
-        "age": 26,
-        "phone": "+918005913597",
-        "email": "demo@yopmail.com",
-        "bloodGroup": "O+",
-        "allergies": "Penicillin, Dust",
-        "medicalConditions": "Mild Asthma",
-        "medications": "Inhaler as needed",
-        "organDonor": true
-      }
-    },
-    "alert_1790741795072": {
-      "id": "alert_1790741795072",
-      "userId": "user_1790525210329",
-      "userEmail": "demo@yopmail.com",
-      "userName": "SIKANDAR KHAN",
-      "timestamp": "2026-09-30T04:16:38.534Z",
-      "timestampIst": "30 Sept 2026, 09:46:38 am IST",
-      "location": {
-        "latitude": 26.99135,
-        "longitude": 75.74334,
-        "address": "26.991350, 75.743340",
-        "speed": 48,
-        "timestamp": "2026-09-30T04:16:35.072Z"
-      },
-      "sensorSnapshot": {
-        "totalG": 5.4,
-        "accelX": 1.2,
-        "accelY": 5.1,
-        "accelZ": 8.9,
-        "impactDetected": true,
-        "timestamp": "2026-09-30T04:16:35.072Z"
-      },
-      "status": "ALERT_SENT",
-      "trackerId": "trk_qb78kdkx",
-      "contactNotifiedEmail": "khansonu8538@gmail.com",
-      "contactNotifiedPhone": "+91 98111 22233",
-      "contactPhones": [
-        "+91 98111 22233",
-        "08005913597",
-        "+918005913597"
-      ],
-      "emailOpened": false,
-      "emailOpenCount": 0,
-      "escalationTimerSeconds": 30,
-      "victimProfile": {
-        "fullName": "SIKANDAR KHAN",
-        "age": 26,
-        "phone": "+918005913597",
-        "email": "demo@yopmail.com",
-        "bloodGroup": "O+",
-        "allergies": "Penicillin, Dust",
-        "medicalConditions": "Mild Asthma",
-        "medications": "Inhaler as needed",
-        "organDonor": true
-      }
-    },
     "alert_1790741819574": {
-      "id": "alert_1790741819574",
-      "userId": "user_1790656742324",
-      "userEmail": "manvendrasinghsolanki019@gmail.com",
-      "userName": "Manvendra Singh",
-      "timestamp": "2026-09-30T04:17:01.566Z",
-      "timestampIst": "30 Sept 2026, 09:47:01 am IST",
-      "location": {
-        "latitude": 28.6139,
-        "longitude": 77.209,
-        "address": "28.613900, 77.209000",
-        "speed": 55,
-        "timestamp": "2026-09-30T04:16:59.574Z"
-      },
-      "sensorSnapshot": {
-        "totalG": 6.2,
-        "accelX": 1.2,
-        "accelY": 5.1,
-        "accelZ": 8.9,
-        "impactDetected": true,
-        "timestamp": "2026-09-30T04:16:59.574Z"
-      },
-      "status": "ALERT_SENT",
-      "trackerId": "trk_6l2otzcl",
       "contactNotifiedEmail": "Panwarpayal954@gmail.com",
       "contactNotifiedPhone": "8233109436",
       "contactPhones": [
         "8233109436"
       ],
-      "emailOpened": false,
       "emailOpenCount": 0,
+      "emailOpened": false,
       "escalationTimerSeconds": 60,
-      "victimProfile": {
-        "fullName": "Manvendra Singh",
-        "age": 25,
-        "phone": "",
-        "email": "manvendrasinghsolanki019@gmail.com",
-        "bloodGroup": "O+",
-        "allergies": "None",
-        "medicalConditions": "None",
-        "medications": "None",
-        "organDonor": true
-      }
-    },
-    "alert_1791208406212": {
-      "id": "alert_1791208406212",
-      "userId": "user_1790525210329",
-      "userEmail": "demo@yopmail.com",
-      "userName": "SIKANDAR KHAN",
-      "timestamp": "2026-10-05T13:53:27.162Z",
-      "timestampIst": "05 Oct 2026, 07:23:27 pm IST",
+      "id": "alert_1790741819574",
       "location": {
-        "latitude": 27.061535,
-        "longitude": 75.765621,
-        "address": "27.061541, 75.765560",
-        "speed": 48,
-        "timestamp": "2026-10-05T13:53:26.212Z"
+        "address": "28.613900, 77.209000",
+        "latitude": 28.6139,
+        "longitude": 77.209,
+        "speed": 55,
+        "timestamp": "2026-09-30T04:16:59.574Z"
       },
       "sensorSnapshot": {
-        "totalG": 5.8,
         "accelX": 1.2,
         "accelY": 5.1,
         "accelZ": 8.9,
         "impactDetected": true,
-        "timestamp": "2026-10-05T13:53:26.212Z"
+        "timestamp": "2026-09-30T04:16:59.574Z",
+        "totalG": 6.2
       },
       "status": "ALERT_SENT",
-      "trackerId": "trk_j397sime",
+      "timestamp": "2026-09-30T04:17:01.566Z",
+      "timestampIst": "30 Sept 2026, 09:47:01 am IST",
+      "trackerId": "trk_6l2otzcl",
+      "userEmail": "manvendrasinghsolanki019@gmail.com",
+      "userId": "user_1790656742324",
+      "userName": "Manvendra Singh",
+      "victimProfile": {
+        "age": 25,
+        "allergies": "None",
+        "bloodGroup": "O+",
+        "email": "manvendrasinghsolanki019@gmail.com",
+        "fullName": "Manvendra Singh",
+        "medicalConditions": "None",
+        "medications": "None",
+        "organDonor": true,
+        "phone": ""
+      }
+    },
+    "alert_1790789666021": {
+      "contactNotifiedEmail": "Sktechno2017@gmail.com",
+      "contactNotifiedPhone": "08005913597",
+      "emailOpenCount": 2,
+      "emailOpened": true,
+      "emailOpenedAt": "2026-09-30T17:34:29.363Z",
+      "escalationTimerSeconds": 10,
+      "id": "alert_1790789666021",
+      "location": {
+        "address": "New Delhi, Delhi, India",
+        "latitude": 28.6139,
+        "longitude": 77.209,
+        "timestamp": "2026-09-30T17:34:26.096Z"
+      },
+      "sensorSnapshot": {
+        "accelX": 1.2,
+        "accelY": 5.1,
+        "accelZ": 8.9,
+        "impactDetected": true,
+        "timestamp": "2026-09-30T17:34:26.096Z",
+        "totalG": 5.8
+      },
+      "status": "EMAIL_OPENED",
+      "timestamp": "2026-09-30T17:34:26.096Z",
+      "trackerId": "trk_81bsgfav",
+      "userEmail": "demo@yopmail.com",
+      "userId": "user_1790525210329",
+      "userName": "SIKANDAR KHAN"
+    },
+    "alert_1791112913716": {
+      "contactNotifiedEmail": "1997dineshkumawat@gmail.com",
+      "contactNotifiedPhone": "1234567890",
+      "contactPhones": [
+        "1234567890",
+        "+918005913597"
+      ],
+      "emailOpenCount": 0,
+      "emailOpened": false,
+      "escalationTimerSeconds": 60,
+      "id": "alert_1791112913716",
+      "location": {
+        "address": "27.061195, 75.765327",
+        "latitude": 27.06119488449761,
+        "longitude": 75.7653270276048,
+        "speed": 48,
+        "timestamp": "2026-10-04T11:21:53.716Z"
+      },
+      "sensorSnapshot": {
+        "accelX": 0,
+        "accelY": 0,
+        "accelZ": 9.81,
+        "gyroAlpha": 14.2,
+        "gyroBeta": 2.1,
+        "gyroGamma": 0.8,
+        "impactDetected": false,
+        "timestamp": "2026-10-04T11:21:38.432Z",
+        "totalG": 1
+      },
+      "status": "ALERT_SENT",
+      "timestamp": "2026-10-04T11:21:57.523Z",
+      "timestampIst": "04 Oct 2026, 04:51:57 pm IST",
+      "trackerId": "trk_m2fxdqdm",
+      "userEmail": "demo@yopmail.com",
+      "userId": "user_1790525210329",
+      "userName": "SIKANDAR KHAN",
+      "victimProfile": {
+        "age": 26,
+        "allergies": "Penicillin, Dust",
+        "bloodGroup": "O+",
+        "email": "demo@yopmail.com",
+        "fullName": "SIKANDAR KHAN",
+        "medicalConditions": "Mild Asthma",
+        "medications": "Inhaler as needed",
+        "organDonor": true,
+        "phone": "+918005913597"
+      }
+    },
+    "alert_1791113000829": {
+      "autoCallTriggeredAt": "2026-10-04T11:24:23.569Z",
+      "contactNotifiedEmail": "1997dineshkumawat@gmail.com",
+      "contactNotifiedPhone": "1234567890",
+      "contactPhones": [
+        "1234567890",
+        "+918005913597"
+      ],
+      "emailOpenCount": 1,
+      "emailOpened": true,
+      "emailOpenedAt": "2026-10-04T11:24:22.479Z",
+      "escalationTimerSeconds": 60,
+      "id": "alert_1791113000829",
+      "location": {
+        "address": "27.061195, 75.765327",
+        "latitude": 27.06119488449761,
+        "longitude": 75.7653270276048,
+        "speed": 48,
+        "timestamp": "2026-10-04T11:23:20.829Z"
+      },
+      "sensorSnapshot": {
+        "accelX": 0,
+        "accelY": 0,
+        "accelZ": 9.81,
+        "gyroAlpha": 14.2,
+        "gyroBeta": 2.1,
+        "gyroGamma": 0.8,
+        "impactDetected": false,
+        "timestamp": "2026-10-04T11:23:17.118Z",
+        "totalG": 1
+      },
+      "status": "ESCALATED_CALL",
+      "timestamp": "2026-10-04T11:23:22.782Z",
+      "timestampIst": "04 Oct 2026, 04:53:22 pm IST",
+      "trackerId": "trk_5n1eijb7",
+      "userEmail": "demo@yopmail.com",
+      "userId": "user_1790525210329",
+      "userName": "SIKANDAR KHAN",
+      "victimProfile": {
+        "age": 26,
+        "allergies": "Penicillin, Dust",
+        "bloodGroup": "O+",
+        "email": "demo@yopmail.com",
+        "fullName": "SIKANDAR KHAN",
+        "medicalConditions": "Mild Asthma",
+        "medications": "Inhaler as needed",
+        "organDonor": true,
+        "phone": "+918005913597"
+      }
+    },
+    "alert_1791128462103": {
+      "contactNotifiedEmail": "rameshkumar391981@gmail.com",
+      "contactNotifiedPhone": "9672011380",
+      "emailOpenCount": 2,
+      "emailOpened": true,
+      "emailOpenedAt": "2026-10-04T15:41:05.064Z",
+      "escalationTimerSeconds": 20,
+      "id": "alert_1791128462103",
+      "location": {
+        "address": "New Delhi, Delhi, India",
+        "latitude": 28.6139,
+        "longitude": 77.209,
+        "timestamp": "2026-10-04T15:41:02.181Z"
+      },
+      "sensorSnapshot": {
+        "accelX": 1.2,
+        "accelY": 5.1,
+        "accelZ": 8.9,
+        "impactDetected": true,
+        "timestamp": "2026-10-04T15:41:02.181Z",
+        "totalG": 5.8
+      },
+      "status": "EMAIL_OPENED",
+      "timestamp": "2026-10-04T15:41:02.181Z",
+      "trackerId": "trk_c9lpwy8o",
+      "userEmail": "panwarpayal954@gmail.com",
+      "userId": "user_1790849139333",
+      "userName": "Rekha "
+    },
+    "alert_1791172142313": {
+      "contactNotifiedEmail": "sachinkyadav2008@gmail.com",
+      "contactNotifiedPhone": "7006618099",
+      "emailOpenCount": 6,
+      "emailOpened": true,
+      "emailOpenedAt": "2026-10-05T03:49:05.602Z",
+      "escalationTimerSeconds": 10,
+      "id": "alert_1791172142313",
+      "location": {
+        "address": "New Delhi, Delhi, India",
+        "latitude": 28.6139,
+        "longitude": 77.209,
+        "timestamp": "2026-10-05T03:49:02.390Z"
+      },
+      "sensorSnapshot": {
+        "accelX": 1.2,
+        "accelY": 5.1,
+        "accelZ": 8.9,
+        "impactDetected": true,
+        "timestamp": "2026-10-05T03:49:02.390Z",
+        "totalG": 5.8
+      },
+      "status": "TRACKER_OPENED",
+      "timestamp": "2026-10-05T03:49:02.390Z",
+      "trackerId": "trk_1ybj1jyt",
+      "trackerOpenedAt": "2026-10-05T03:50:40.956Z",
+      "userEmail": "manvendrasinghsolanki019@gmail.com",
+      "userId": "user_1790656742324",
+      "userName": "Rahul Sharma"
+    },
+    "alert_1791175434602": {
+      "autoCallTriggeredAt": "2026-10-05T04:45:57.187Z",
+      "contactNotifiedEmail": "satyendrasinghh7807@gmail.com",
+      "contactNotifiedPhone": "9263478942",
+      "emailOpenCount": 3,
+      "emailOpened": true,
+      "emailOpenedAt": "2026-10-05T04:43:59.081Z",
+      "escalationTimerSeconds": 10,
+      "id": "alert_1791175434602",
+      "location": {
+        "address": "New Delhi, Delhi, India",
+        "latitude": 28.6139,
+        "longitude": 77.209,
+        "timestamp": "2026-10-05T04:43:54.783Z"
+      },
+      "sensorSnapshot": {
+        "accelX": 1.2,
+        "accelY": 5.1,
+        "accelZ": 8.9,
+        "impactDetected": true,
+        "timestamp": "2026-10-05T04:43:54.783Z",
+        "totalG": 5.8
+      },
+      "status": "ESCALATED_CALL",
+      "timestamp": "2026-10-05T04:43:54.783Z",
+      "trackerId": "trk_5boeg4f5",
+      "trackerOpenedAt": "2026-10-05T04:44:30.594Z",
+      "userEmail": "manvendrasinghsolanki019@gmail.com",
+      "userId": "user_1790656742324",
+      "userName": "Manvendra "
+    },
+    "alert_1791177723743": {
+      "contactNotifiedEmail": "Demo@yopmail.com",
+      "contactNotifiedPhone": "1234567890",
+      "emailOpenCount": 1,
+      "emailOpened": true,
+      "emailOpenedAt": "2026-10-05T05:22:10.831Z",
+      "escalationTimerSeconds": 10,
+      "id": "alert_1791177723743",
+      "location": {
+        "address": "New Delhi, Delhi, India",
+        "latitude": 28.6139,
+        "longitude": 77.209,
+        "timestamp": "2026-10-05T05:22:03.816Z"
+      },
+      "sensorSnapshot": {
+        "accelX": 1.2,
+        "accelY": 5.1,
+        "accelZ": 8.9,
+        "impactDetected": true,
+        "timestamp": "2026-10-05T05:22:03.816Z",
+        "totalG": 5.8
+      },
+      "status": "EMAIL_OPENED",
+      "timestamp": "2026-10-05T05:22:03.816Z",
+      "trackerId": "trk_c9ve5gi1",
+      "userEmail": "manvendrasinghsolanki019@gmail.com",
+      "userId": "user_1790656742324",
+      "userName": "Manvendra "
+    },
+    "alert_1791207751700": {
+      "contactNotifiedEmail": "Sikandaritguy@gmail.com",
+      "contactNotifiedPhone": "1234567890",
+      "emailOpenCount": 2,
+      "emailOpened": true,
+      "emailOpenedAt": "2026-10-05T13:42:36.467Z",
+      "escalationTimerSeconds": 10,
+      "id": "alert_1791207751700",
+      "location": {
+        "address": "New Delhi, Delhi, India",
+        "latitude": 28.6139,
+        "longitude": 77.209,
+        "timestamp": "2026-10-05T13:42:31.790Z"
+      },
+      "sensorSnapshot": {
+        "accelX": 1.2,
+        "accelY": 5.1,
+        "accelZ": 8.9,
+        "impactDetected": true,
+        "timestamp": "2026-10-05T13:42:31.790Z",
+        "totalG": 5.8
+      },
+      "status": "EMAIL_OPENED",
+      "timestamp": "2026-10-05T13:42:31.790Z",
+      "trackerId": "trk_3du497xl",
+      "userEmail": "demo@yopmail.com",
+      "userId": "user_1790525210329",
+      "userName": "SIKANDAR KHAN"
+    },
+    "alert_1791207878891": {
+      "autoCallTriggeredAt": "2026-10-05T13:44:50.468Z",
+      "contactNotifiedEmail": "Sikandaritguy@gmail.com",
+      "contactNotifiedPhone": "1234567890",
+      "emailOpenCount": 2,
+      "emailOpened": true,
+      "emailOpenedAt": "2026-10-05T14:29:23.195Z",
+      "escalationTimerSeconds": 10,
+      "id": "alert_1791207878891",
+      "location": {
+        "address": "New Delhi, Delhi, India",
+        "latitude": 28.6139,
+        "longitude": 77.209,
+        "timestamp": "2026-10-05T13:44:38.968Z"
+      },
+      "sensorSnapshot": {
+        "accelX": 1.2,
+        "accelY": 5.1,
+        "accelZ": 8.9,
+        "impactDetected": true,
+        "timestamp": "2026-10-05T13:44:38.968Z",
+        "totalG": 5.8
+      },
+      "status": "ESCALATED_CALL",
+      "timestamp": "2026-10-05T13:44:38.968Z",
+      "trackerId": "trk_yu8y6u23",
+      "userEmail": "demo@yopmail.com",
+      "userId": "user_1790525210329",
+      "userName": "SIKANDAR KHAN"
+    },
+    "alert_1791208406212": {
       "contactNotifiedEmail": "Sikandaritguy@gmail.com",
       "contactNotifiedPhone": "1234567890",
       "contactPhones": [
         "1234567890",
         "+918005913597"
       ],
-      "emailOpened": false,
       "emailOpenCount": 0,
+      "emailOpened": false,
       "escalationTimerSeconds": 60,
+      "id": "alert_1791208406212",
+      "location": {
+        "address": "27.061541, 75.765560",
+        "latitude": 27.061535,
+        "longitude": 75.765621,
+        "speed": 48,
+        "timestamp": "2026-10-05T13:53:26.212Z"
+      },
+      "sensorSnapshot": {
+        "accelX": 1.2,
+        "accelY": 5.1,
+        "accelZ": 8.9,
+        "impactDetected": true,
+        "timestamp": "2026-10-05T13:53:26.212Z",
+        "totalG": 5.8
+      },
+      "status": "ALERT_SENT",
+      "timestamp": "2026-10-05T13:53:27.162Z",
+      "timestampIst": "05 Oct 2026, 07:23:27 pm IST",
+      "trackerId": "trk_j397sime",
+      "userEmail": "demo@yopmail.com",
+      "userId": "user_1790525210329",
+      "userName": "SIKANDAR KHAN",
       "victimProfile": {
-        "fullName": "SIKANDAR KHAN",
         "age": 26,
-        "phone": "+918005913597",
-        "email": "demo@yopmail.com",
-        "bloodGroup": "O+",
         "allergies": "Penicillin, Dust",
+        "bloodGroup": "O+",
+        "email": "demo@yopmail.com",
+        "fullName": "SIKANDAR KHAN",
         "medicalConditions": "Mild Asthma",
         "medications": "Inhaler as needed",
-        "organDonor": true
+        "organDonor": true,
+        "phone": "+918005913597"
+      }
+    },
+    "alert_1791209032084": {
+      "autoCallTriggeredAt": "2026-10-05T14:04:03.837Z",
+      "contactNotifiedEmail": "Sikandaritguy@gmail.com",
+      "contactNotifiedPhone": "1234567890",
+      "emailOpenCount": 3,
+      "emailOpened": true,
+      "emailOpenedAt": "2026-10-05T14:06:03.205Z",
+      "escalationTimerSeconds": 10,
+      "id": "alert_1791209032084",
+      "location": {
+        "address": "New Delhi, Delhi, India",
+        "latitude": 28.6139,
+        "longitude": 77.209,
+        "timestamp": "2026-10-05T14:03:52.268Z"
+      },
+      "sensorSnapshot": {
+        "accelX": 1.2,
+        "accelY": 5.1,
+        "accelZ": 8.9,
+        "impactDetected": true,
+        "timestamp": "2026-10-05T14:03:52.268Z",
+        "totalG": 5.8
+      },
+      "status": "ESCALATED_CALL",
+      "timestamp": "2026-10-05T14:03:52.268Z",
+      "trackerId": "trk_eayo1l8r",
+      "userEmail": "demo@yopmail.com",
+      "userId": "user_1790525210329",
+      "userName": "SIKANDAR KHAN"
+    },
+    "alert_1791210040037": {
+      "contactNotifiedEmail": "Sikandaritguy@gmail.com",
+      "contactNotifiedPhone": "1234567890",
+      "contactPhones": [
+        "1234567890",
+        "+918005913597"
+      ],
+      "emailOpenCount": 0,
+      "emailOpened": false,
+      "escalationTimerSeconds": 60,
+      "id": "alert_1791210040037",
+      "location": {
+        "address": "27.061519, 75.765565",
+        "latitude": 27.061519265857765,
+        "longitude": 75.76556483458553,
+        "speed": 48,
+        "timestamp": "2026-10-05T14:20:40.037Z"
+      },
+      "sensorSnapshot": {
+        "accelX": 0,
+        "accelY": 0,
+        "accelZ": 9.81,
+        "gyroAlpha": 14.2,
+        "gyroBeta": 2.1,
+        "gyroGamma": 0.8,
+        "impactDetected": false,
+        "timestamp": "2026-10-05T14:20:35.303Z",
+        "totalG": 1
+      },
+      "status": "ALERT_SENT",
+      "timestamp": "2026-10-05T14:20:42.073Z",
+      "timestampIst": "05 Oct 2026, 07:50:42 pm IST",
+      "trackerId": "trk_1md5ree8",
+      "userEmail": "demo@yopmail.com",
+      "userId": "user_1790525210329",
+      "userName": "SIKANDAR KHAN",
+      "victimProfile": {
+        "age": 26,
+        "allergies": "Penicillin, Dust",
+        "bloodGroup": "O+",
+        "email": "demo@yopmail.com",
+        "fullName": "SIKANDAR KHAN",
+        "medicalConditions": "Mild Asthma",
+        "medications": "Inhaler as needed",
+        "organDonor": true,
+        "phone": "+918005913597"
+      }
+    },
+    "alert_1791210451095": {
+      "contactNotifiedEmail": "Sikandaritguy@gmail.com",
+      "contactNotifiedPhone": "1234567890",
+      "contactPhones": [
+        "1234567890",
+        "+918005913597"
+      ],
+      "emailOpenCount": 0,
+      "emailOpened": false,
+      "escalationTimerSeconds": 60,
+      "id": "alert_1791210451095",
+      "location": {
+        "address": "27.061611, 75.765603",
+        "latitude": 27.06161096283019,
+        "longitude": 75.76560312270468,
+        "speed": 48,
+        "timestamp": "2026-10-05T14:27:31.095Z"
+      },
+      "sensorSnapshot": {
+        "accelX": 0,
+        "accelY": 0,
+        "accelZ": 9.81,
+        "gyroAlpha": 14.2,
+        "gyroBeta": 2.1,
+        "gyroGamma": 0.8,
+        "impactDetected": false,
+        "timestamp": "2026-10-05T14:27:26.005Z",
+        "totalG": 1
+      },
+      "status": "ALERT_SENT",
+      "timestamp": "2026-10-05T14:27:32.662Z",
+      "timestampIst": "05 Oct 2026, 07:57:32 pm IST",
+      "trackerId": "trk_gi0t47ns",
+      "userEmail": "demo@yopmail.com",
+      "userId": "user_1790525210329",
+      "userName": "SIKANDAR KHAN",
+      "victimProfile": {
+        "age": 26,
+        "allergies": "Penicillin, Dust",
+        "bloodGroup": "O+",
+        "email": "demo@yopmail.com",
+        "fullName": "SIKANDAR KHAN",
+        "medicalConditions": "Mild Asthma",
+        "medications": "Inhaler as needed",
+        "organDonor": true,
+        "phone": "+918005913597"
+      }
+    },
+    "alert_1791210640746": {
+      "contactNotifiedEmail": "Sikandaritguy@gmail.com",
+      "contactNotifiedPhone": "1234567890",
+      "contactPhones": [
+        "1234567890",
+        "+918005913597"
+      ],
+      "emailOpenCount": 1,
+      "emailOpened": true,
+      "emailOpenedAt": "2026-10-05T14:32:11.560Z",
+      "escalationTimerSeconds": 60,
+      "id": "alert_1791210640746",
+      "location": {
+        "address": "27.061535, 75.765621",
+        "latitude": 27.061534553215377,
+        "longitude": 75.76562075145999,
+        "speed": 48,
+        "timestamp": "2026-10-05T14:30:40.746Z"
+      },
+      "sensorSnapshot": {
+        "accelX": 0,
+        "accelY": 0,
+        "accelZ": 9.81,
+        "gyroAlpha": 14.2,
+        "gyroBeta": 2.1,
+        "gyroGamma": 0.8,
+        "impactDetected": false,
+        "timestamp": "2026-10-05T14:30:35.708Z",
+        "totalG": 1
+      },
+      "status": "TRACKER_OPENED",
+      "timestamp": "2026-10-05T14:30:42.221Z",
+      "timestampIst": "05 Oct 2026, 08:00:42 pm IST",
+      "trackerId": "trk_bxvqxe8j",
+      "trackerOpenedAt": "2026-10-05T14:32:14.617Z",
+      "userEmail": "demo@yopmail.com",
+      "userId": "user_1790525210329",
+      "userName": "SIKANDAR KHAN",
+      "victimProfile": {
+        "age": 26,
+        "allergies": "Penicillin, Dust",
+        "bloodGroup": "O+",
+        "email": "demo@yopmail.com",
+        "fullName": "SIKANDAR KHAN",
+        "medicalConditions": "Mild Asthma",
+        "medications": "Inhaler as needed",
+        "organDonor": true,
+        "phone": "+918005913597"
       }
     }
   },
@@ -677,7 +972,10 @@
     "trk_t2km1niu": "alert_1790741763798",
     "trk_qb78kdkx": "alert_1790741795072",
     "trk_6l2otzcl": "alert_1790741819574",
-    "trk_j397sime": "alert_1791208406212"
+    "trk_j397sime": "alert_1791208406212",
+    "trk_1md5ree8": "alert_1791210040037",
+    "trk_gi0t47ns": "alert_1791210451095",
+    "trk_bxvqxe8j": "alert_1791210640746"
   },
   "otps": {
     "demo_yopmail_com": {
