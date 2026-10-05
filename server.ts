@@ -1160,235 +1160,245 @@ async function findUserContacts(req: express.Request, rawUserId?: string, rawEma
 
 // 8. Emergency Alert Trigger & SOS Mail Dispatch in Firebase
 app.post(["/api/alert/trigger", "/api/emergency/dispatch"], async (req, res) => {
-  const {
-    userId,
-    userEmail,
-    userName,
-    latitude,
-    longitude,
-    gForce,
-    speedKmh,
-    location,
-    sensorSnapshot,
-    contactEmail,
-    contactPhone,
-    escalationTimerSeconds,
-  } = req.body;
+  try {
+    const {
+      userId,
+      userEmail,
+      userName,
+      latitude,
+      longitude,
+      gForce,
+      speedKmh,
+      location,
+      sensorSnapshot,
+      contactEmail,
+      contactPhone,
+      escalationTimerSeconds,
+    } = req.body;
 
-  const mailCfg = getMailConfig();
+    const mailCfg = getMailConfig();
 
-  // 1. Resolve Crashed User Profile directly from Firebase Database
-  const user = await findCrashedUserProfile(req, userId, userEmail);
-  const targetUserId = user?.id || userId || "user_unknown";
-  const targetUserEmail = user?.email || userEmail || "";
-  const resolvedVictimName =
-    (user?.fullName && user.fullName.trim()) ||
-    (userName && String(userName).trim()) ||
-    (targetUserEmail ? targetUserEmail.split("@")[0] : "Emergency User");
+    // 1. Resolve Crashed User Profile directly from Firebase Database
+    const user = await findCrashedUserProfile(req, userId, userEmail);
+    const targetUserId = user?.id || userId || "user_unknown";
+    const targetUserEmail = user?.email || userEmail || "";
+    const resolvedVictimName =
+      (user?.fullName && user.fullName.trim()) ||
+      (userName && String(userName).trim()) ||
+      (targetUserEmail ? targetUserEmail.split("@")[0] : "Emergency User");
 
-  // 2. Fetch User's Emergency Contacts from Firebase Database (across all matching userIds for this user)
-  const userContacts = await findUserContacts(req, userId || targetUserId, targetUserEmail);
-  const primaryContact = userContacts.find((c) => c.isPrimary) || userContacts[0];
-  const allContactPhones = Array.from(
-    new Set(
-      [
-        primaryContact?.phone,
-        ...userContacts.map((c) => c.phone),
-        contactPhone,
-        user?.phone,
-      ]
-        .map((p) => (p ? String(p).trim() : ""))
-        .filter(Boolean)
-    )
-  );
-
-  // 3. Determine target recipient email & phone strictly based on user's contacts or request
-  const targetContactEmail = (
-    primaryContact?.email ||
-    contactEmail ||
-    userContacts[0]?.email ||
-    targetUserEmail ||
-    mailCfg.fromEmail ||
-    "alerts@rescuetron.com"
-  ).trim();
-  const targetContactPhone = primaryContact?.phone || allContactPhones[0] || "";
-  const targetContactName = primaryContact?.name || "Emergency Contact";
-
-  // 4. Resolve exact GPS Coordinates (from request top-level, request.location, or user's latest saved GPS in Firebase)
-  const savedLatestLoc =
-    (await dbGet<any>(`locations/${targetUserId}/latest`)) ||
-    (user?.id ? await dbGet<any>(`locations/${user.id}/latest`) : null) ||
-    user?.lastLocation ||
-    null;
-
-  const reqLatNum = latitude !== undefined && latitude !== null ? Number(latitude) : (location?.latitude !== undefined && location?.latitude !== null ? Number(location.latitude) : NaN);
-  const reqLngNum = longitude !== undefined && longitude !== null ? Number(longitude) : (location?.longitude !== undefined && location?.longitude !== null ? Number(location.longitude) : NaN);
-
-  const rawLat =
-    !isNaN(reqLatNum) && reqLatNum !== 0
-      ? reqLatNum
-      : savedLatestLoc?.latitude !== undefined && savedLatestLoc?.latitude !== null && Number(savedLatestLoc.latitude) !== 0
-      ? Number(savedLatestLoc.latitude)
-      : !isNaN(reqLatNum)
-      ? reqLatNum
-      : 0;
-
-  const rawLng =
-    !isNaN(reqLngNum) && reqLngNum !== 0
-      ? reqLngNum
-      : savedLatestLoc?.longitude !== undefined && savedLatestLoc?.longitude !== null && Number(savedLatestLoc.longitude) !== 0
-      ? Number(savedLatestLoc.longitude)
-      : !isNaN(reqLngNum)
-      ? reqLngNum
-      : 0;
-
-  const rawAddress =
-    address ||
-    location?.address ||
-    savedLatestLoc?.address ||
-    `${rawLat.toFixed(6)}, ${rawLng.toFixed(6)}`;
-
-  const coordsOnlyString = `${rawLat.toFixed(6)}, ${rawLng.toFixed(6)}`;
-  const rawSpeed = Number(speedKmh ?? location?.speed ?? savedLatestLoc?.speed ?? 45);
-  const rawGForce = Number(gForce ?? sensorSnapshot?.totalG ?? 5.8);
-
-  console.log(`🚨 [SOS Dispatch] Crash on device of "${resolvedVictimName}" (${targetUserId} / ${targetUserEmail}) | Coords: ${coordsOnlyString} (${rawAddress}) | To: "${targetContactEmail}"`);
-
-  const trackerId = `trk_${Math.random().toString(36).substring(2, 10)}`;
-  const forwardedProto = req.get("x-forwarded-proto") || "https";
-  const forwardedHost = req.get("x-forwarded-host") || req.get("host");
-  const defaultPublicUrl = "https://ais-dev-n5as5ltfc5bad2meu4urx5-651964088015.asia-east1.run.app";
-
-  let appUrl = process.env.APP_URL;
-  if (!appUrl) {
-    if (forwardedHost && !forwardedHost.includes("localhost") && !forwardedHost.includes("0.0.0.0")) {
-      appUrl = `${forwardedProto}://${forwardedHost}`;
-    } else {
-      appUrl = defaultPublicUrl;
-    }
-  }
-
-  const trackerUrl = `${appUrl}/?tracker=${trackerId}`;
-  const alertId = `alert_${Date.now()}`;
-  const trackingPixelUrl = `${appUrl}/api/email/track-open/${alertId}.png`;
-  const nowIso = new Date().toISOString();
-  const nowIst = formatIstDateTime(nowIso);
-
-  const settings = (await dbGet<StoredSettings>("settings")) || { trackerWaitSeconds: 20 };
-  const resolvedWaitSeconds =
-    Number(escalationTimerSeconds) ||
-    Number(user?.settings?.trackerWaitSeconds) ||
-    Number(settings.trackerWaitSeconds) ||
-    20;
-
-  const victimProfileSnapshot = {
-    fullName: resolvedVictimName,
-    age: Number(user?.age) || 25,
-    phone: user?.phone || "",
-    email: targetUserEmail,
-    bloodGroup: user?.bloodGroup || "Not Specified",
-    allergies: user?.allergies || "None",
-    medicalConditions: user?.medicalConditions || "None",
-    medications: user?.medications || "None",
-    organDonor: Boolean(user?.organDonor ?? (user as any)?.isOrganDonor ?? (user as any)?.isDonor ?? true),
-  };
-
-  const newAlert: StoredAlert & { contactPhones?: string[] } = {
-    id: alertId,
-    userId: targetUserId,
-    userEmail: targetUserEmail,
-    userName: resolvedVictimName,
-    timestamp: nowIso,
-    timestampIst: nowIst,
-    location: {
-      latitude: rawLat,
-      longitude: rawLng,
-      address: coordsOnlyString,
-      speed: rawSpeed,
-      timestamp: nowIso,
-    },
-    sensorSnapshot: sensorSnapshot || {
-      totalG: rawGForce,
-      accelX: 1.2,
-      accelY: 5.1,
-      accelZ: 8.9,
-      impactDetected: true,
-      timestamp: nowIso,
-    },
-    status: "ALERT_SENT",
-    trackerId,
-    contactNotifiedEmail: targetContactEmail,
-    contactNotifiedPhone: targetContactPhone,
-    contactPhones: allContactPhones,
-    emailOpened: false,
-    emailOpenCount: 0,
-    escalationTimerSeconds: resolvedWaitSeconds,
-    victimProfile: victimProfileSnapshot,
-  };
-
-  // Write alert to Firebase Realtime DB
-  await dbSet(`alerts/${newAlert.id}`, newAlert);
-  await dbSet(`alertsByTracker/${trackerId}`, newAlert.id);
-
-  // Dispatch Emergency SOS Email with exact crashed user's details, IST time, and Medical ID
-  const uniqueRecipientEmails = Array.from(
-    new Set(
-      [
-        targetContactEmail,
-        ...userContacts.map((c) => (c.email ? c.email.trim() : "")),
-      ].filter(Boolean)
-    )
-  );
-
-  let mailResult = { sent: false, message: "No recipient email configured" };
-  for (const recipientEmail of uniqueRecipientEmails) {
-    const matchedContact = userContacts.find(
-      (c) => c.email && c.email.trim().toLowerCase() === recipientEmail.toLowerCase()
+    // 2. Fetch User's Emergency Contacts from Firebase Database (across all matching userIds for this user)
+    const userContacts = await findUserContacts(req, userId || targetUserId, targetUserEmail);
+    const primaryContact = userContacts.find((c) => c.isPrimary) || userContacts[0];
+    const allContactPhones = Array.from(
+      new Set(
+        [
+          primaryContact?.phone,
+          ...userContacts.map((c) => c.phone),
+          contactPhone,
+          user?.phone,
+        ]
+          .map((p) => (p ? String(p).trim() : ""))
+          .filter(Boolean)
+      )
     );
-    const resMail = await sendEmergencyAlertEmail({
-      toEmail: recipientEmail,
-      contactName: matchedContact?.name || targetContactName,
-      victimName: victimProfileSnapshot.fullName,
-      victimAge: victimProfileSnapshot.age,
-      victimPhone: victimProfileSnapshot.phone,
-      victimEmail: victimProfileSnapshot.email,
-      locationAddress: coordsOnlyString,
-      latitude: rawLat,
-      longitude: rawLng,
-      gForce: rawGForce,
-      speedKmh: rawSpeed,
-      timestamp: nowIso,
-      trackerUrl,
-      bloodGroup: victimProfileSnapshot.bloodGroup,
-      allergies: victimProfileSnapshot.allergies,
-      medicalConditions: victimProfileSnapshot.medicalConditions,
-      medications: victimProfileSnapshot.medications,
-      organDonor: victimProfileSnapshot.organDonor,
-      alertId: newAlert.id,
-      trackingPixelUrl,
-    });
-    if (resMail.sent || !mailResult.sent) {
-      mailResult = resMail;
+
+    // 3. Determine target recipient email & phone strictly based on user's contacts or request
+    const targetContactEmail = (
+      primaryContact?.email ||
+      contactEmail ||
+      userContacts[0]?.email ||
+      targetUserEmail ||
+      mailCfg.fromEmail ||
+      "alerts@rescuetron.com"
+    ).trim();
+    const targetContactPhone = primaryContact?.phone || allContactPhones[0] || "";
+    const targetContactName = primaryContact?.name || "Emergency Contact";
+
+    // 4. Resolve exact GPS Coordinates (from request top-level, request.location, or user's latest saved GPS in Firebase)
+    const savedLatestLoc =
+      (await dbGet<any>(`locations/${targetUserId}/latest`)) ||
+      (user?.id ? await dbGet<any>(`locations/${user.id}/latest`) : null) ||
+      user?.lastLocation ||
+      null;
+
+    const reqLatNum = latitude !== undefined && latitude !== null ? Number(latitude) : (location?.latitude !== undefined && location?.latitude !== null ? Number(location.latitude) : NaN);
+    const reqLngNum = longitude !== undefined && longitude !== null ? Number(longitude) : (location?.longitude !== undefined && location?.longitude !== null ? Number(location.longitude) : NaN);
+
+    const rawLat =
+      !isNaN(reqLatNum) && reqLatNum !== 0
+        ? reqLatNum
+        : savedLatestLoc?.latitude !== undefined && savedLatestLoc?.latitude !== null && Number(savedLatestLoc.latitude) !== 0
+        ? Number(savedLatestLoc.latitude)
+        : !isNaN(reqLatNum)
+        ? reqLatNum
+        : 0;
+
+    const rawLng =
+      !isNaN(reqLngNum) && reqLngNum !== 0
+        ? reqLngNum
+        : savedLatestLoc?.longitude !== undefined && savedLatestLoc?.longitude !== null && Number(savedLatestLoc.longitude) !== 0
+        ? Number(savedLatestLoc.longitude)
+        : !isNaN(reqLngNum)
+        ? reqLngNum
+        : 0;
+
+    const rawAddress =
+      req.body.address ||
+      location?.address ||
+      savedLatestLoc?.address ||
+      `${rawLat.toFixed(6)}, ${rawLng.toFixed(6)}`;
+
+    const coordsOnlyString = `${rawLat.toFixed(6)}, ${rawLng.toFixed(6)}`;
+    const rawSpeed = Number(speedKmh ?? location?.speed ?? savedLatestLoc?.speed ?? 45);
+    const rawGForce = Number(gForce ?? sensorSnapshot?.totalG ?? 5.8);
+
+    console.log(`🚨 [SOS Dispatch] Crash on device of "${resolvedVictimName}" (${targetUserId} / ${targetUserEmail}) | Coords: ${coordsOnlyString} (${rawAddress}) | To: "${targetContactEmail}"`);
+
+    const trackerId = `trk_${Math.random().toString(36).substring(2, 10)}`;
+    const forwardedProto = req.get("x-forwarded-proto") || "https";
+    const forwardedHost = req.get("x-forwarded-host") || req.get("host");
+    const defaultPublicUrl = "https://ais-dev-n5as5ltfc5bad2meu4urx5-651964088015.asia-east1.run.app";
+
+    let appUrl = process.env.APP_URL;
+    if (!appUrl) {
+      if (forwardedHost && !forwardedHost.includes("localhost") && !forwardedHost.includes("0.0.0.0")) {
+        appUrl = `${forwardedProto}://${forwardedHost}`;
+      } else {
+        appUrl = defaultPublicUrl;
+      }
     }
+
+    const trackerUrl = `${appUrl}/?tracker=${trackerId}`;
+    const alertId = `alert_${Date.now()}`;
+    const trackingPixelUrl = `${appUrl}/api/email/track-open/${alertId}.png`;
+    const nowIso = new Date().toISOString();
+    const nowIst = formatIstDateTime(nowIso);
+
+    const settings = (await dbGet<StoredSettings>("settings")) || { trackerWaitSeconds: 20 };
+    const resolvedWaitSeconds =
+      Number(escalationTimerSeconds) ||
+      Number(user?.settings?.trackerWaitSeconds) ||
+      Number(settings.trackerWaitSeconds) ||
+      20;
+
+    const victimProfileSnapshot = {
+      fullName: resolvedVictimName,
+      age: Number(user?.age) || 25,
+      phone: user?.phone || "",
+      email: targetUserEmail,
+      bloodGroup: user?.bloodGroup || "Not Specified",
+      allergies: user?.allergies || "None",
+      medicalConditions: user?.medicalConditions || "None",
+      medications: user?.medications || "None",
+      organDonor: Boolean(user?.organDonor ?? (user as any)?.isOrganDonor ?? (user as any)?.isDonor ?? true),
+    };
+
+    const newAlert: StoredAlert & { contactPhones?: string[] } = {
+      id: alertId,
+      userId: targetUserId,
+      userEmail: targetUserEmail,
+      userName: resolvedVictimName,
+      timestamp: nowIso,
+      timestampIst: nowIst,
+      location: {
+        latitude: rawLat,
+        longitude: rawLng,
+        address: rawAddress,
+        speed: rawSpeed,
+        timestamp: nowIso,
+      },
+      sensorSnapshot: sensorSnapshot || {
+        totalG: rawGForce,
+        accelX: 1.2,
+        accelY: 5.1,
+        accelZ: 8.9,
+        impactDetected: true,
+        timestamp: nowIso,
+      },
+      status: "ALERT_SENT",
+      trackerId,
+      contactNotifiedEmail: targetContactEmail,
+      contactNotifiedPhone: targetContactPhone,
+      contactPhones: allContactPhones,
+      emailOpened: false,
+      emailOpenCount: 0,
+      escalationTimerSeconds: resolvedWaitSeconds,
+      victimProfile: victimProfileSnapshot,
+    };
+
+    // Write alert to Firebase Realtime DB
+    await dbSet(`alerts/${newAlert.id}`, newAlert);
+    await dbSet(`alertsByTracker/${trackerId}`, newAlert.id);
+
+    // Dispatch Emergency SOS Email with exact crashed user's details, IST time, and Medical ID
+    const uniqueRecipientEmails = Array.from(
+      new Set(
+        [
+          targetContactEmail,
+          ...userContacts.map((c) => (c.email ? c.email.trim() : "")),
+        ].filter(Boolean)
+      )
+    );
+
+    let mailResult = { sent: false, message: "No recipient email configured" };
+    if (uniqueRecipientEmails.length > 0) {
+      const mailResults = await Promise.all(
+        uniqueRecipientEmails.map(async (recipientEmail) => {
+          const matchedContact = userContacts.find(
+            (c) => c.email && c.email.trim().toLowerCase() === recipientEmail.toLowerCase()
+          );
+          return sendEmergencyAlertEmail({
+            toEmail: recipientEmail,
+            contactName: matchedContact?.name || targetContactName,
+            victimName: victimProfileSnapshot.fullName,
+            victimAge: victimProfileSnapshot.age,
+            victimPhone: victimProfileSnapshot.phone,
+            victimEmail: victimProfileSnapshot.email,
+            locationAddress: rawAddress,
+            latitude: rawLat,
+            longitude: rawLng,
+            gForce: rawGForce,
+            speedKmh: rawSpeed,
+            timestamp: nowIso,
+            trackerUrl,
+            bloodGroup: victimProfileSnapshot.bloodGroup,
+            allergies: victimProfileSnapshot.allergies,
+            medicalConditions: victimProfileSnapshot.medicalConditions,
+            medications: victimProfileSnapshot.medications,
+            organDonor: victimProfileSnapshot.organDonor,
+            alertId: newAlert.id,
+            trackingPixelUrl,
+          });
+        })
+      );
+      mailResult = mailResults.find((r) => r.sent) || mailResults[0];
+    }
+
+    // Refresh alert timestamp right after email dispatch finishes so the mobile History screen starts the full countdown timer
+    const postMailIso = new Date().toISOString();
+    newAlert.timestamp = postMailIso;
+    newAlert.timestampIst = formatIstDateTime(postMailIso);
+    await dbSet(`alerts/${newAlert.id}`, newAlert);
+
+    broadcastWs({ type: "ALERT_TRIGGERED", alert: newAlert });
+
+    return res.json({
+      success: true,
+      message: mailResult.sent
+        ? `Emergency alert dispatched to ${targetContactEmail}!`
+        : `Emergency alert created (${mailResult.message})`,
+      alert: newAlert,
+      trackerUrl,
+      mailResult,
+    });
+  } catch (err: any) {
+    console.error("🚨 [Alert Trigger Error]", err);
+    return res.status(500).json({
+      success: false,
+      message: err.message || "Failed to process emergency alert",
+    });
   }
-
-  // Refresh alert timestamp right after email dispatch finishes so the mobile History screen starts the full countdown timer
-  const postMailIso = new Date().toISOString();
-  newAlert.timestamp = postMailIso;
-  newAlert.timestampIst = formatIstDateTime(postMailIso);
-  await dbSet(`alerts/${newAlert.id}`, newAlert);
-
-  broadcastWs({ type: "ALERT_TRIGGERED", alert: newAlert });
-
-  return res.json({
-    success: true,
-    message: mailResult.sent
-      ? `Emergency alert dispatched to ${targetContactEmail}!`
-      : `Emergency alert created (${mailResult.message})`,
-    alert: newAlert,
-    trackerUrl,
-    mailResult,
-  });
 });
 
 // 9. Email Open Web Beacon Tracking Pixel in Firebase
@@ -1878,8 +1888,19 @@ app.post("/api/email/test", async (req, res) => {
 async function startServer() {
   const httpServer = createHttpServer(app);
 
-  // Initialize WebSocket Server on /ws
-  wss = new WebSocketServer({ server: httpServer, path: "/ws" });
+  // Initialize WebSocket Server with noServer to share the exact same HTTP connection
+  wss = new WebSocketServer({ noServer: true });
+
+  httpServer.on("upgrade", (request, socket, head) => {
+    const pathname = request.url ? new URL(request.url, `http://${request.headers.host}`).pathname : "";
+    if (pathname === "/ws" || pathname.startsWith("/ws/")) {
+      wss?.handleUpgrade(request, socket, head, (ws) => {
+        wss?.emit("connection", ws, request);
+      });
+    } else {
+      socket.destroy();
+    }
+  });
 
   wss.on("connection", async (ws) => {
     const settings = (await dbGet<StoredSettings>("settings")) || {
@@ -1905,17 +1926,9 @@ async function startServer() {
   // Seed / Verify Firebase Realtime Database
   seedFirebaseIfEmpty().catch((e) => console.warn("Firebase seed notice:", e));
 
-  // Ensure unmatched /api/* requests always return valid JSON instead of SPA index.html
-  app.use("/api", (req, res) => {
-    res.status(404).json({
-      success: false,
-      message: `API endpoint not found: ${req.method} ${req.originalUrl}`,
-    });
-  });
-
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
-      server: { middlewareMode: true },
+      server: { middlewareMode: true, hmr: false, ws: false, watch: null },
       appType: "spa",
     });
     app.use(vite.middlewares);
@@ -1925,6 +1938,14 @@ async function startServer() {
       res.sendFile(path.join(process.cwd(), "dist", "index.html"));
     });
   }
+
+  // Ensure unmatched /api/* requests always return valid JSON instead of SPA index.html
+  app.use("/api", (req, res) => {
+    res.status(404).json({
+      success: false,
+      message: `API endpoint not found: ${req.method} ${req.originalUrl}`,
+    });
+  });
 
   httpServer.listen(PORT, "0.0.0.0", () => {
     console.log(`🚀 Rescuetron Firebase-Backed Server running on http://0.0.0.0:${PORT}`);

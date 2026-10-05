@@ -27,6 +27,54 @@ export async function sendViaHttpsApi(params: {
   let resendErrorResult: { sent: boolean; messageId?: string; provider?: string; error?: string } | null = null;
 
   // 1. Check Brevo / Sendinblue v3 REST API Key (must start with xkeysib-, NOT xsmtpsib- SMTP password)
+  // 1. Check Resend API Key (https://resend.com - Port 443 HTTPS REST API - Instant & Highly Reliable)
+  const resendApiKey = (
+    process.env.RESEND_API_KEY ||
+    process.env.RESEND_KEY ||
+    process.env.RESEND_TOKEN
+  )?.replace(/["']/g, "").trim();
+
+  if (resendApiKey) {
+    const maskedKey = `${resendApiKey.slice(0, 5)}...${resendApiKey.slice(-4)}`;
+    const fromEmail = process.env.RESEND_FROM_EMAIL || "Rescuetron Emergency <onboarding@resend.dev>";
+    console.log(`🚀 [HTTPS Email Gateway] Initiating Resend API dispatch -> Target: "${cleanToEmail}" | From: "${fromEmail}" | Key: "${maskedKey}"`);
+
+    try {
+      const res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${resendApiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: fromEmail,
+          to: [cleanToEmail],
+          subject,
+          html: htmlContent,
+          text: textContent,
+        }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (res.ok && data.id) {
+        console.log(`✅ [HTTPS Email Gateway SUCCESS] Resend Email Delivered to "${cleanToEmail}"! Message ID: ${data.id}`);
+        return { sent: true, messageId: data.id, provider: "Resend HTTPS API" };
+      } else {
+        const errorReason = data.message || data.error || JSON.stringify(data);
+        console.warn(`⚠️ [HTTPS Email Gateway Notice] Resend response (HTTP ${res.status}): ${errorReason}`);
+        resendErrorResult = {
+          sent: false,
+          error: `Resend Notice (HTTP ${res.status}): ${errorReason}`,
+          provider: "Resend HTTPS API",
+        };
+      }
+    } catch (err: any) {
+      console.warn(`⚠️ [HTTPS Email Gateway Exception] Resend call skipped:`, err.message);
+    }
+  }
+
+  // 2. Check Brevo REST API Key if available
   const rawBrevoCandidate = (
     process.env.BREVO_API_KEY ||
     process.env.BREVO_KEY ||
@@ -39,10 +87,6 @@ export async function sendViaHttpsApi(params: {
   )?.replace(/["']/g, "").trim();
 
   const brevoApiKey = rawBrevoCandidate && !rawBrevoCandidate.startsWith("xsmtpsib-") ? rawBrevoCandidate : "";
-
-  if (rawBrevoCandidate && rawBrevoCandidate.startsWith("xsmtpsib-")) {
-    console.warn(`⚠️ [Brevo Key Notice] Ignoring SMTP key ("${rawBrevoCandidate.slice(0, 8)}...") for REST API and continuing to Resend HTTPS API.`);
-  }
 
   if (brevoApiKey) {
     try {
@@ -74,99 +118,13 @@ export async function sendViaHttpsApi(params: {
         const msgId = data.messageId || (data.messageIds && data.messageIds[0]) || "brevo_ok";
         console.log(`✅ [HTTPS Email Gateway SUCCESS] Delivered via Brevo HTTPS API to "${cleanToEmail}"! ID: ${msgId}`);
         return { sent: true, messageId: msgId, provider: "Brevo HTTPS API" };
-      } else {
-        const errorDetail = data.message || data.code || JSON.stringify(data);
-        console.warn(`⚠️ [HTTPS Email Gateway Notice] Brevo API response (HTTP ${res.status}): ${errorDetail}`);
-        resendErrorResult = {
-          sent: false,
-          error: `Brevo API Notice (HTTP ${res.status}): ${errorDetail}`,
-          provider: "Brevo HTTPS API",
-        };
       }
     } catch (err: any) {
       console.warn(`⚠️ [HTTPS Email Gateway Notice] Brevo request skipped:`, err.message);
     }
-  } else {
-    console.log(`ℹ️ [HTTPS Email Gateway] Valid Brevo v3 API Key not set, proceeding to Resend HTTPS API.`);
   }
 
-  // 2. If Brevo REST API key is not set, but Brevo SMTP (xsmtpsib-) is configured, dispatch via Brevo SMTP
-  // so emails can be delivered to ANY recipient email address (not restricted to Resend sandbox owner)
-  const config = getMailConfig();
-  if (config.host.includes("brevo") && config.user && config.pass) {
-    try {
-      const transport = getTransporter();
-      if (transport) {
-        console.log(`🚀 [Brevo SMTP Gateway] Dispatching via ${config.host}:${config.port} to "${cleanToEmail}" | From: "${config.fromEmail}" | AuthUser: "${config.user}"...`);
-        const info = await transport.sendMail({
-          from: `"${config.fromName}" <${config.fromEmail}>`,
-          to: cleanToEmail,
-          subject,
-          text: textContent,
-          html: htmlContent,
-        });
-        console.log(`✅ [Brevo SMTP Gateway SUCCESS] Delivered to "${cleanToEmail}"! MessageId: ${info.messageId}`);
-        return { sent: true, messageId: info.messageId, provider: "Brevo SMTP Gateway" };
-      }
-    } catch (smtpErr: any) {
-      console.warn(`⚠️ [Brevo SMTP Gateway Notice] ${smtpErr.message}`);
-    }
-  }
-
-  // 3. Check Resend API Key (https://resend.com - 3000 free emails/mo)
-  const resendApiKey = (
-    process.env.RESEND_API_KEY ||
-    process.env.RESEND_KEY ||
-    process.env.RESEND_TOKEN
-  )?.replace(/["']/g, "").trim();
-
-  if (resendApiKey) {
-    const maskedKey = `${resendApiKey.slice(0, 5)}...${resendApiKey.slice(-4)}`;
-    const fromEmail = process.env.RESEND_FROM_EMAIL || "Rescuetron Emergency <onboarding@resend.dev>";
-    console.log(`🚀 [HTTPS Email Gateway] Initiating Resend API dispatch -> Target: "${cleanToEmail}" | From: "${fromEmail}" | Key: "${maskedKey}"`);
-
-    try {
-      const res = await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${resendApiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          from: fromEmail,
-          to: [cleanToEmail],
-          subject,
-          html: htmlContent,
-          text: textContent,
-        }),
-      });
-
-      const data = await res.json().catch(() => ({}));
-      
-      if (res.ok && data.id) {
-        console.log(`✅ [HTTPS Email Gateway SUCCESS] Resend Email Delivered to "${cleanToEmail}"! Message ID: ${data.id}`);
-        return { sent: true, messageId: data.id, provider: "Resend HTTPS API" };
-      } else {
-        const errorReason = data.message || data.error || JSON.stringify(data);
-        const isValidationError = data.name === "validation_error" || res.status === 403;
-
-        let friendlyExplanation = errorReason;
-        if (isValidationError && errorReason.includes("testing emails")) {
-          friendlyExplanation = `Resend Free Test Mode: Resend only sends to the registered owner address unless a domain is verified.`;
-          console.warn(`⚠️ [Resend Domain Warning] ${friendlyExplanation}`);
-        } else {
-          console.warn(`⚠️ [HTTPS Email Gateway Notice] Resend API response (HTTP ${res.status}): ${errorReason}`);
-        }
-        
-        resendErrorResult = { sent: false, error: friendlyExplanation, provider: "Resend HTTPS API" };
-      }
-    } catch (err: any) {
-      console.warn(`⚠️ [HTTPS Email Gateway Notice] Resend Fetch Failed: ${err.message}`);
-      resendErrorResult = { sent: false, error: `Resend Fetch Failed: ${err.message}`, provider: "Resend HTTPS API" };
-    }
-  }
-
-  // 4. Check SendGrid API Key (https://sendgrid.com)
+  // 3. Check SendGrid API Key (https://sendgrid.com)
   const sendgridApiKey = process.env.SENDGRID_API_KEY;
   if (sendgridApiKey) {
     try {
