@@ -1,0 +1,654 @@
+{
+  "settings": {
+    "autoCallingEnabled": true,
+    "gForceSensitivity": 4.5,
+    "lastUpdated": "2026-10-05T04:40:22.423Z",
+    "soundAlertsEnabled": true,
+    "trackerWaitSeconds": 10
+  },
+  "users": {
+    "user_1790525210329": {
+      "age": 26,
+      "allergies": "Penicillin, Dust",
+      "bloodDonor": true,
+      "bloodGroup": "O+",
+      "createdAt": "2026-09-27T16:06:50.329Z",
+      "email": "demo@yopmail.com",
+      "fullName": "SIKANDAR KHAN",
+      "id": "user_1790525210329",
+      "isBloodDonor": true,
+      "isDonor": true,
+      "isOrganDonor": true,
+      "lastLocation": {
+        "latitude": 27.061519265857765,
+        "longitude": 75.76556483458553,
+        "address": "27.061519, 75.765565",
+        "speed": 48,
+        "timestamp": "2026-10-05T13:17:51.726Z"
+      },
+      "medicalConditions": "Mild Asthma",
+      "medications": "Inhaler as needed",
+      "organDonor": true,
+      "passwordHash": "Test@123",
+      "phone": "+918005913597",
+      "settings": {
+        "autoCallingEnabled": true,
+        "gForceSensitivity": 4.5,
+        "lastUpdated": "2026-09-30T17:36:53.192Z",
+        "soundAlertsEnabled": true,
+        "trackerWaitSeconds": 60
+      },
+      "updatedAt": "2026-09-30T17:36:53.342Z"
+    },
+    "user_1790612427735": {
+      "age": 25,
+      "allergies": "None",
+      "bloodGroup": "O+",
+      "createdAt": "2026-09-28T16:20:27.735Z",
+      "email": "sonu@yopmail.com",
+      "fullName": "User",
+      "id": "user_1790612427735",
+      "medicalConditions": "None",
+      "medications": "None",
+      "organDonor": true,
+      "passwordHash": "Test@123",
+      "phone": "+91 98765 43210"
+    },
+    "user_1790656742324": {
+      "age": 20,
+      "allergies": "None",
+      "bloodDonor": true,
+      "bloodGroup": "O+",
+      "createdAt": "2026-09-29T04:39:02.324Z",
+      "email": "manvendrasinghsolanki019@gmail.com",
+      "fullName": "Manvendra ",
+      "id": "user_1790656742324",
+      "isBloodDonor": true,
+      "isDonor": true,
+      "isOrganDonor": true,
+      "lastLocation": {
+        "address": "26.991856, 75.743082",
+        "latitude": 26.9918561,
+        "longitude": 75.7430816,
+        "speed": 1.3207015872001648,
+        "timestamp": "2026-10-05T07:33:55.779Z"
+      },
+      "medicalConditions": "None",
+      "medications": "None",
+      "organDonor": true,
+      "passwordHash": "password123",
+      "phone": "8949171205",
+      "settings": {
+        "autoCallingEnabled": true,
+        "gForceSensitivity": 4.5,
+        "lastUpdated": "2026-10-05T04:40:22.423Z",
+        "soundAlertsEnabled": true,
+        "trackerWaitSeconds": 10
+      },
+      "updatedAt": "2026-10-05T04:47:41.569Z"
+    },
+    "user_1790849139333": {
+      "age": 19,
+      "allergies": "None",
+      "bloodDonor": true,
+      "bloodGroup": "AB+",
+      "createdAt": "2026-10-01T10:05:39.333Z",
+      "email": "panwarpayal954@gmail.com",
+      "fullName": "Rekha ",
+      "id": "user_1790849139333",
+      "isBloodDonor": true,
+      "isDonor": true,
+      "isOrganDonor": true,
+      "lastLocation": {
+        "address": "27.007992, 75.724131",
+        "latitude": 27.007992,
+        "longitude": 75.7241313,
+        "speed": 0.20774150043725967,
+        "timestamp": "2026-10-04T15:42:19.220Z"
+      },
+      "medicalConditions": "None",
+      "medications": "None",
+      "organDonor": true,
+      "passwordHash": "password123",
+      "phone": "8233109436",
+      "settings": {
+        "autoCallingEnabled": true,
+        "gForceSensitivity": 4.5,
+        "lastUpdated": "2026-10-01T10:06:11.184Z",
+        "soundAlertsEnabled": true,
+        "trackerWaitSeconds": 20
+      },
+      "updatedAt": "2026-10-04T15:37:06.541Z"
+    },
+    "user_1791112884446": {
+      "age": 20,
+      "allergies": "None",
+      "bloodDonor": true,
+      "bloodGroup": "O+",
+      "createdAt": "2026-10-04T11:21:24.446Z",
+      "email": "sachinkyadav2008@gmail.com",
+      "fullName": "Sachin kumar",
+      "id": "user_1791112884446",
+      "isBloodDonor": true,
+      "isDonor": true,
+      "isOrganDonor": true,
+      "lastLocation": {
+        "address": "26.997887, 75.737450",
+        "latitude": 26.9978871,
+        "longitude": 75.7374499,
+        "speed": 0.13872087299823763,
+        "timestamp": "2026-10-04T11:25:35.915Z"
+      },
+      "medicalConditions": "None",
+      "medications": "None",
+      "organDonor": true,
+      "passwordHash": "password123",
+      "phone": "+1919660228079",
+      "settings": {
+        "autoCallingEnabled": true,
+        "gForceSensitivity": 4.5,
+        "lastUpdated": "2026-10-04T11:23:39.378Z",
+        "soundAlertsEnabled": true,
+        "trackerWaitSeconds": 20
+      },
+      "updatedAt": "2026-10-04T11:23:39.531Z"
+    },
+    "user_demo_101": {
+      "age": 26,
+      "allergies": "Penicillin, Dust",
+      "bloodGroup": "O+",
+      "createdAt": "2026-09-27T16:05:54.116Z",
+      "email": "demo@rescuetron.com",
+      "fullName": "Rahul Sharma",
+      "id": "user_demo_101",
+      "lastLocation": {
+        "address": "27.061541, 75.765560",
+        "latitude": 27.06154130352068,
+        "longitude": 75.76555974169256,
+        "speed": 48,
+        "timestamp": "2026-10-05T13:17:38.910Z"
+      },
+      "medicalConditions": "Mild Asthma",
+      "medications": "Inhaler as needed",
+      "organDonor": true,
+      "passwordHash": "password123",
+      "phone": "+91 98765 43210",
+      "settings": {
+        "autoCallingEnabled": true,
+        "gForceSensitivity": 4.5,
+        "lastUpdated": "2026-10-05T03:51:37.180Z",
+        "soundAlertsEnabled": true,
+        "trackerWaitSeconds": 30
+      },
+      "updatedAt": "2026-10-05T03:51:37.437Z"
+    }
+  },
+  "test_connection": {
+    "appName": "Rescuetron Emergency System",
+    "databaseStatus": "LIVE_FIREBASE_CONNECTED",
+    "lastHeartbeat": "2026-10-05T13:17:45.160Z"
+  },
+  "locations": {
+    "user_demo_101": {
+      "latest": {
+        "latitude": 27.06154130352068,
+        "longitude": 75.76555974169256,
+        "address": "27.061541, 75.765560",
+        "speed": 48,
+        "timestamp": "2026-10-05T13:17:38.913Z"
+      }
+    },
+    "user_1790525210329": {
+      "latest": {
+        "latitude": 27.061519265857765,
+        "longitude": 75.76556483458553,
+        "address": "27.061519, 75.765565",
+        "speed": 48,
+        "timestamp": "2026-10-05T13:17:51.726Z"
+      }
+    },
+    "user_1790656742324": {}
+  },
+  "usersByEmail": {
+    "demo_yopmail_com": "user_1790525210329",
+    "demo_rescuetron_com": "user_demo_101",
+    "manvendrasinghsolanki019_gmail_com": "user_1790656742324"
+  },
+  "contacts": {
+    "contact_1790612511455": {
+      "createdAt": "2026-09-28T16:21:51.455Z",
+      "email": "khansonu8538@gmail.com",
+      "id": "contact_1790612511455",
+      "isPrimary": true,
+      "name": "Somu",
+      "phone": "5555555555",
+      "relationship": "Uv",
+      "updatedAt": "2026-09-28T16:21:51.455Z",
+      "userId": "user_1790612427735"
+    },
+    "contact_1791112887168": {
+      "createdAt": "2026-10-04T11:21:27.168Z",
+      "email": "1997dineshkumawat@gmail.com",
+      "id": "contact_1791112887168",
+      "isPrimary": true,
+      "name": "dinesh",
+      "phone": "1234567890",
+      "relationship": "Family",
+      "updatedAt": "2026-10-04T11:21:27.168Z",
+      "userId": "user_1790525210329"
+    },
+    "contact_1791128420734": {
+      "createdAt": "2026-10-04T15:40:20.734Z",
+      "email": "rameshkumar391981@gmail.com",
+      "id": "contact_1791128420734",
+      "isPrimary": true,
+      "name": "Ramesh",
+      "phone": "9672011380",
+      "relationship": "Father",
+      "updatedAt": "2026-10-04T15:40:20.734Z",
+      "userId": "user_1790849139333"
+    },
+    "contact_1791184425645": {
+      "createdAt": "2026-10-05T07:13:45.645Z",
+      "email": "panwarpayal954@gmail.com",
+      "id": "contact_1791184425645",
+      "isPrimary": true,
+      "name": "Payal",
+      "phone": "8233109436",
+      "relationship": "Sister",
+      "updatedAt": "2026-10-05T07:13:45.645Z",
+      "userId": "user_1790656742324"
+    }
+  },
+  "alerts": {
+    "alert_1790578944539": {
+      "contactNotifiedEmail": "priya.emergency@gmail.com",
+      "contactNotifiedPhone": "+91 98111 22233",
+      "emailOpenCount": 0,
+      "emailOpened": false,
+      "escalationTimerSeconds": 60,
+      "id": "alert_1790578944539",
+      "location": {
+        "accuracy": 98,
+        "address": "Lat 26.9914°, Lng 75.7435°",
+        "latitude": 26.991429522657516,
+        "longitude": 75.74345231347415,
+        "speed": 48,
+        "timestamp": "2026-09-28T07:02:21.695Z"
+      },
+      "sensorSnapshot": {
+        "accelX": 0,
+        "accelY": 0,
+        "accelZ": 9.81,
+        "gyroAlpha": 14.2,
+        "gyroBeta": 2.1,
+        "gyroGamma": 0.8,
+        "impactDetected": false,
+        "timestamp": "2026-09-28T07:02:21.792Z",
+        "totalG": 1
+      },
+      "status": "ALERT_SENT",
+      "timestamp": "2026-09-28T07:02:24.898Z",
+      "trackerId": "trk_lc73p32o",
+      "userEmail": "demo@rescuetron.com",
+      "userId": "user_demo_101",
+      "userName": "Rahul Sharma"
+    },
+    "alert_1790579009118": {
+      "contactNotifiedEmail": "SIKANDARITGUY@GMAIL.COM",
+      "contactNotifiedPhone": "08005913597",
+      "emailOpenCount": 0,
+      "emailOpened": false,
+      "escalationTimerSeconds": 60,
+      "id": "alert_1790579009118",
+      "location": {
+        "accuracy": 106,
+        "address": "Lat 26.9914°, Lng 75.7434°",
+        "latitude": 26.991358479826765,
+        "longitude": 75.74344274098723,
+        "speed": 48,
+        "timestamp": "2026-09-28T07:03:28.007Z"
+      },
+      "sensorSnapshot": {
+        "accelX": 0,
+        "accelY": 0,
+        "accelZ": 9.81,
+        "gyroAlpha": 14.2,
+        "gyroBeta": 2.1,
+        "gyroGamma": 0.8,
+        "impactDetected": false,
+        "timestamp": "2026-09-28T07:03:27.829Z",
+        "totalG": 1
+      },
+      "status": "ALERT_SENT",
+      "timestamp": "2026-09-28T07:03:29.193Z",
+      "trackerId": "trk_v4gumt6z",
+      "userEmail": "demo@rescuetron.com",
+      "userId": "user_demo_101",
+      "userName": "Rahul Sharma"
+    },
+    "alert_1790579702370": {
+      "contactNotifiedEmail": "SIKANDARITGUY@GMAIL.COM",
+      "contactNotifiedPhone": "08005913597",
+      "emailOpenCount": 0,
+      "emailOpened": false,
+      "escalationTimerSeconds": 60,
+      "id": "alert_1790579702370",
+      "location": {
+        "accuracy": 98,
+        "address": "Lat 26.9914°, Lng 75.7435°",
+        "latitude": 26.991429522657516,
+        "longitude": 75.74345231347415,
+        "speed": 48,
+        "timestamp": "2026-09-28T07:04:24.912Z"
+      },
+      "sensorSnapshot": {
+        "accelX": 0,
+        "accelY": 0,
+        "accelZ": 9.81,
+        "gyroAlpha": 14.2,
+        "gyroBeta": 2.1,
+        "gyroGamma": 0.8,
+        "impactDetected": false,
+        "timestamp": "2026-09-28T07:14:57.280Z",
+        "totalG": 1
+      },
+      "status": "ALERT_SENT",
+      "timestamp": "2026-09-28T07:15:02.562Z",
+      "trackerId": "trk_ul7lrbbh",
+      "userEmail": "demo@rescuetron.com",
+      "userId": "user_demo_101",
+      "userName": "Rahul Sharma"
+    },
+    "alert_1790656843725": {
+      "autoCallTriggeredAt": "2026-09-29T05:19:46.352Z",
+      "contactNotifiedEmail": "Panwarpayal954@gmail.com",
+      "contactNotifiedPhone": "8233109436",
+      "emailOpenCount": 5,
+      "emailOpened": true,
+      "emailOpenedAt": "2026-09-29T04:40:59.561Z",
+      "escalationTimerSeconds": 20,
+      "id": "alert_1790656843725",
+      "location": {
+        "address": "New Delhi, Delhi, India",
+        "latitude": 28.6139,
+        "longitude": 77.209,
+        "timestamp": "2026-09-29T04:40:43.909Z"
+      },
+      "sensorSnapshot": {
+        "accelX": 1.2,
+        "accelY": 5.1,
+        "accelZ": 8.9,
+        "impactDetected": true,
+        "timestamp": "2026-09-29T04:40:43.909Z",
+        "totalG": 5.8
+      },
+      "status": "ESCALATED_CALL",
+      "timestamp": "2026-09-29T04:40:43.909Z",
+      "trackerId": "trk_y1sc44o7",
+      "trackerOpenedAt": "2026-09-29T04:55:39.368Z",
+      "userEmail": "manvendrasinghsolanki019@gmail.com",
+      "userId": "user_1790656742324",
+      "userName": "Rahul Sharma"
+    },
+    "alert_1790673166524": {
+      "autoCallTriggeredAt": "2026-09-29T09:15:17.259Z",
+      "contactNotifiedEmail": "SIKANDARITGUY@GMAIL.COM",
+      "contactNotifiedPhone": "+91 98111 22233",
+      "emailOpenCount": 0,
+      "emailOpened": true,
+      "emailOpenedAt": "2026-09-29T09:15:24.977Z",
+      "escalationTimerSeconds": 60,
+      "id": "alert_1790673166524",
+      "location": {
+        "address": "26.991356, 75.743343",
+        "latitude": 26.991355956933393,
+        "longitude": 75.74334273520512,
+        "speed": 48,
+        "timestamp": "2026-09-29T09:12:46.524Z"
+      },
+      "sensorSnapshot": {
+        "accelX": 0,
+        "accelY": 0,
+        "accelZ": 9.81,
+        "gyroAlpha": 14.2,
+        "gyroBeta": 2.1,
+        "gyroGamma": 0.8,
+        "impactDetected": false,
+        "timestamp": "2026-09-29T09:12:35.204Z",
+        "totalG": 1
+      },
+      "status": "TRACKER_OPENED",
+      "timestamp": "2026-09-29T09:12:46.524Z",
+      "timestampIst": "29 Sept 2026, 02:42:46 pm IST",
+      "trackerId": "trk_6l6dkf26",
+      "trackerOpenedAt": "2026-09-29T09:15:24.977Z",
+      "userEmail": "demo@yopmail.com",
+      "userId": "user_1790525210329",
+      "userName": "SIKANDAR KHAN",
+      "victimProfile": {
+        "age": 26,
+        "allergies": "Penicillin, Dust",
+        "bloodGroup": "O+",
+        "email": "demo@yopmail.com",
+        "fullName": "SIKANDAR KHAN",
+        "medicalConditions": "Mild Asthma",
+        "medications": "Inhaler as needed",
+        "organDonor": true,
+        "phone": "+918005913597"
+      }
+    },
+    "alert_1790740230012": {
+      "contactNotifiedEmail": "demo@yopmail.com",
+      "contactNotifiedPhone": "08005913597",
+      "contactPhones": [
+        "08005913597",
+        "+918005913597"
+      ],
+      "emailOpenCount": 0,
+      "emailOpened": false,
+      "escalationTimerSeconds": 30,
+      "id": "alert_1790740230012",
+      "location": {
+        "address": "26.991346, 75.743246",
+        "latitude": 26.991346251174313,
+        "longitude": 75.74324641218348,
+        "speed": 48,
+        "timestamp": "2026-09-30T03:50:30.012Z"
+      },
+      "sensorSnapshot": {
+        "accelX": 0,
+        "accelY": 0,
+        "accelZ": 9.81,
+        "gyroAlpha": 14.2,
+        "gyroBeta": 2.1,
+        "gyroGamma": 0.8,
+        "impactDetected": false,
+        "timestamp": "2026-09-30T03:50:24.304Z",
+        "totalG": 1
+      },
+      "status": "ALERT_SENT",
+      "timestamp": "2026-09-30T03:50:31.178Z",
+      "timestampIst": "30 Sept 2026, 09:20:31 am IST",
+      "trackerId": "trk_uu80146l",
+      "userEmail": "demo@yopmail.com",
+      "userId": "user_1790525210329",
+      "userName": "SIKANDAR KHAN",
+      "victimProfile": {
+        "age": 26,
+        "allergies": "Penicillin, Dust",
+        "bloodGroup": "O+",
+        "email": "demo@yopmail.com",
+        "fullName": "SIKANDAR KHAN",
+        "medicalConditions": "Mild Asthma",
+        "medications": "Inhaler as needed",
+        "organDonor": true,
+        "phone": "+918005913597"
+      }
+    },
+    "alert_1790741763798": {
+      "id": "alert_1790741763798",
+      "userId": "user_1790525210329",
+      "userEmail": "demo@yopmail.com",
+      "userName": "SIKANDAR KHAN",
+      "timestamp": "2026-09-30T04:16:07.114Z",
+      "timestampIst": "30 Sept 2026, 09:46:07 am IST",
+      "location": {
+        "latitude": 26.99135,
+        "longitude": 75.74334,
+        "address": "26.991350, 75.743340",
+        "speed": 48,
+        "timestamp": "2026-09-30T04:16:03.798Z"
+      },
+      "sensorSnapshot": {
+        "totalG": 5.4,
+        "accelX": 1.2,
+        "accelY": 5.1,
+        "accelZ": 8.9,
+        "impactDetected": true,
+        "timestamp": "2026-09-30T04:16:03.798Z"
+      },
+      "status": "ALERT_SENT",
+      "trackerId": "trk_t2km1niu",
+      "contactNotifiedEmail": "demo@yopmail.com",
+      "contactNotifiedPhone": "08005913597",
+      "contactPhones": [
+        "08005913597",
+        "+918005913597"
+      ],
+      "emailOpened": false,
+      "emailOpenCount": 0,
+      "escalationTimerSeconds": 30,
+      "victimProfile": {
+        "fullName": "SIKANDAR KHAN",
+        "age": 26,
+        "phone": "+918005913597",
+        "email": "demo@yopmail.com",
+        "bloodGroup": "O+",
+        "allergies": "Penicillin, Dust",
+        "medicalConditions": "Mild Asthma",
+        "medications": "Inhaler as needed",
+        "organDonor": true
+      }
+    },
+    "alert_1790741795072": {
+      "id": "alert_1790741795072",
+      "userId": "user_1790525210329",
+      "userEmail": "demo@yopmail.com",
+      "userName": "SIKANDAR KHAN",
+      "timestamp": "2026-09-30T04:16:38.534Z",
+      "timestampIst": "30 Sept 2026, 09:46:38 am IST",
+      "location": {
+        "latitude": 26.99135,
+        "longitude": 75.74334,
+        "address": "26.991350, 75.743340",
+        "speed": 48,
+        "timestamp": "2026-09-30T04:16:35.072Z"
+      },
+      "sensorSnapshot": {
+        "totalG": 5.4,
+        "accelX": 1.2,
+        "accelY": 5.1,
+        "accelZ": 8.9,
+        "impactDetected": true,
+        "timestamp": "2026-09-30T04:16:35.072Z"
+      },
+      "status": "ALERT_SENT",
+      "trackerId": "trk_qb78kdkx",
+      "contactNotifiedEmail": "khansonu8538@gmail.com",
+      "contactNotifiedPhone": "+91 98111 22233",
+      "contactPhones": [
+        "+91 98111 22233",
+        "08005913597",
+        "+918005913597"
+      ],
+      "emailOpened": false,
+      "emailOpenCount": 0,
+      "escalationTimerSeconds": 30,
+      "victimProfile": {
+        "fullName": "SIKANDAR KHAN",
+        "age": 26,
+        "phone": "+918005913597",
+        "email": "demo@yopmail.com",
+        "bloodGroup": "O+",
+        "allergies": "Penicillin, Dust",
+        "medicalConditions": "Mild Asthma",
+        "medications": "Inhaler as needed",
+        "organDonor": true
+      }
+    },
+    "alert_1790741819574": {
+      "id": "alert_1790741819574",
+      "userId": "user_1790656742324",
+      "userEmail": "manvendrasinghsolanki019@gmail.com",
+      "userName": "Manvendra Singh",
+      "timestamp": "2026-09-30T04:17:01.566Z",
+      "timestampIst": "30 Sept 2026, 09:47:01 am IST",
+      "location": {
+        "latitude": 28.6139,
+        "longitude": 77.209,
+        "address": "28.613900, 77.209000",
+        "speed": 55,
+        "timestamp": "2026-09-30T04:16:59.574Z"
+      },
+      "sensorSnapshot": {
+        "totalG": 6.2,
+        "accelX": 1.2,
+        "accelY": 5.1,
+        "accelZ": 8.9,
+        "impactDetected": true,
+        "timestamp": "2026-09-30T04:16:59.574Z"
+      },
+      "status": "ALERT_SENT",
+      "trackerId": "trk_6l2otzcl",
+      "contactNotifiedEmail": "Panwarpayal954@gmail.com",
+      "contactNotifiedPhone": "8233109436",
+      "contactPhones": [
+        "8233109436"
+      ],
+      "emailOpened": false,
+      "emailOpenCount": 0,
+      "escalationTimerSeconds": 60,
+      "victimProfile": {
+        "fullName": "Manvendra Singh",
+        "age": 25,
+        "phone": "",
+        "email": "manvendrasinghsolanki019@gmail.com",
+        "bloodGroup": "O+",
+        "allergies": "None",
+        "medicalConditions": "None",
+        "medications": "None",
+        "organDonor": true
+      }
+    }
+  },
+  "alertsByTracker": {
+    "trk_66ph0we7": "alert_1790579341088",
+    "trk_c0876tag": "alert_1790579458389",
+    "trk_rn3xg2fm": "alert_1790579585621",
+    "trk_jstd30i5": "alert_1790580901521",
+    "trk_ki30v60a": "alert_1790596680884",
+    "trk_6l6dkf26": "alert_1790673166524",
+    "trk_t2km1niu": "alert_1790741763798",
+    "trk_qb78kdkx": "alert_1790741795072",
+    "trk_6l2otzcl": "alert_1790741819574"
+  },
+  "otps": {
+    "demo_yopmail_com": {
+      "email": "demo@yopmail.com",
+      "code": "212683",
+      "status": "PENDING_VERIFICATION",
+      "createdAt": "2026-09-28T13:32:58.126Z",
+      "expiresAt": 1790604178126,
+      "password": "Test@123"
+    },
+    "sktechno2017_gmail_com": {
+      "email": "sktechno2017@gmail.com",
+      "code": "691974",
+      "status": "PENDING_VERIFICATION",
+      "createdAt": "2026-09-28T13:34:15.854Z",
+      "expiresAt": 1790604255854,
+      "password": "Test@123"
+    }
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "expo": {
+    "name": "Rescuetron",
+    "slug": "rescuetron-emergency",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./src/assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "backgroundColor": "#020617",
+      "resizeMode": "contain"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.rescuetron.emergency",
+      "infoPlist": {
+        "UIBackgroundModes": [
+          "location",
+          "fetch",
+          "audio",
+          "processing"
+        ],
+        "NSLocationWhenInUseUsageDescription": "Rescuetron needs your location to send live GPS coordinates to emergency services and family in case of an accident.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Rescuetron requires background location to detect vehicle crashes and monitor life safety while driving.",
+        "NSLocationAlwaysUsageDescription": "Rescuetron needs background location to alert emergency contacts even when your phone is locked or screen is off.",
+        "NSMotionUsageDescription": "Rescuetron uses motion sensors to detect high G-force impacts and vehicle collisions."
+      }
+    },
+    "android": {
+      "package": "com.rescuetron.emergency",
+      "adaptiveIcon": {
+        "backgroundColor": "#020617"
+      },
+      "permissions": [
+        "FOREGROUND_SERVICE",
+        "FOREGROUND_SERVICE_SPECIAL_USE",
+        "WAKE_LOCK",
+        "REQUEST_IGNORE_BATTERY_OPTIMIZATIONS",
+        "POST_NOTIFICATIONS",
+        "VIBRATE",
+        "INTERNET",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "CALL_PHONE",
+        "RECEIVE_BOOT_COMPLETED",
+        "ACTIVITY_RECOGNITION"
+      ]
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow Rescuetron to access your location in the background to detect vehicle crashes."
+        }
+      ]
+    ]
+  }
+}
